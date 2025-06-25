@@ -1,0 +1,14 @@
+{
+  "name": "coffee-grinder",
+  "version": "7.0.0",
+  "description": "Transform automation blueprints into readable documentation",
+  "main": "src/index.html",
+  "scripts": {
+    "dev": "python -m http.server 8080 --directory src",
+    "build": "node build.js",
+    "serve": "python -m http.server 8080 --directory dist"
+  },
+  "keywords": ["automation", "documentation", "blueprint", "make.com"],
+  "license": "MIT",
+  "devDependencies": {}
+}
