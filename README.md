@@ -66,4 +66,4 @@ from `main`. When you're ready, open a pull request. See
 [`CONTRIBUTING.md`](CONTRIBUTING.md) for full guidelines.
 
 ## License
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](LICENSE).
