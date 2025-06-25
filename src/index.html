@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Erin's Coffee Grinder v7.0 - Enhanced</title>
+  <link rel="stylesheet" href="styles/main.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/8.12.0/ajv7.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sorttable/2.1.0/sorttable.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Erin's Coffee Grinder v7.0</h1>
+      <p>Enhanced Blueprint Analyzer - Recursive Processing, Structure & Details</p>
+    </header>
+
+    <div class="section meta-section">
+      <h2>Metadata</h2>
+      <label>Prepared By:</label>
+      <input id="preparedBy" placeholder="Your name…" />
+      <label>Recipient:</label>
+      <input id="recipient" placeholder="Erin or team…" />
+      <label>Version:</label>
+      <input id="version" placeholder="e.g., 1.0" />
+      <label>Objective:</label>
+      <input id="objective" placeholder="High-level goal of this scenario…" />
+    </div>
+
+    <div class="section input-section">
+      <h2>Blueprint Input</h2>
+      <label>Upload .json Blueprint:</label>
+      <input type="file" id="jsonUpload" accept="application/json" />
+      <div id="uploadError" class="error" style="display:none"></div>
+      <label>Or Paste JSON Blueprint:</label>
+      <textarea id="jsonInput"></textarea>
+      <div id="validateError" class="error" style="display:none"></div>
+      <div id="parseWarning" class="warning" style="display:none"></div>
+    </div>
+
+    <button id="sampleBtn" class="button">Load Sample</button>
+    <button id="generateBtn" class="button" disabled>Generate Spec</button>
+
+    <div class="section output-section">
+        <h2>Specification Output</h2>
+        <div class="toggle-section" id="toggles" style="display:none">
+            <label><input type="checkbox" id="showScenario" /> Scenario Details</label>
+            <label><input type="checkbox" id="showConnections" /> Connections List</label>
+            <label><input type="checkbox" id="showVars" /> Variables List</label>
+            <label><input type="checkbox" id="showFilters" /> Show Filters</label>
+            <label><input type="checkbox" id="showModuleDetails" checked /> Show Module Details Table</label>
+        </div>
+
+        <div id="progress" style="margin-top: 15px; margin-bottom:8px; font-style: italic; color: var(--muted);"></div>
+        <div id="outputArea"></div>
+
+        <div id="tableControls" style="margin-top:10px; display: none;">
+            <input id="tableFilter" placeholder="Filter modules table…" />
+        </div>
+        <div class="export-buttons" style="margin-top:10px;">
+            <button id="copyBtn" class="button" style="display:none">Copy Text</button>
+            <button id="exportPdfBtn" class="button" style="display:none">Export PDF</button>
+            <button id="exportMdBtn" class="button" style="display:none">Export Markdown</button>
+            <button id="exportTxtBtn" class="button" style="display:none">Export Text</button>
+        </div>
+    </div>
+
+  </div>
+
+  <script src="scripts/main.js"></script>
+</body>
+</html>
