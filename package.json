@@ -4,7 +4,6 @@
   "description": "Transform automation blueprints into readable documentation",
   "main": "src/index.html",
   "scripts": {
-    "dev": "python -m http.server 8080 --directory src"
   },
   "keywords": [
     "automation",
