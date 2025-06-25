@@ -17,7 +17,7 @@ Erin's Coffee Grinder is a web-based blueprint analyzer that processes automatio
 - Optional: Node.js and npm for running local servers and build scripts.
 
 ### Running Locally
-You can serve the `src` directory using a simple HTTP server:
+You can serve the `src` directory using a simple HTTP server or the provided npm script:
 
 #### Using Python 3
 ```bash
@@ -29,14 +29,36 @@ python -m http.server 8080 --directory src
 npx serve src -p 8080
 ```
 
+#### Using npm
+```bash
+npm run dev
+```
+
 Then open your browser at `http://localhost:8080`.
 
 ### Development
 - Edit source files in `src/`.
 - The app will load the modularized CSS and JS files.
+- Start a local dev server with:
+   ```bash
+   npm run dev
+   ```
 
 ### Building for Distribution
-(To be implemented) A build script will combine all files into a single distributable HTML file.
+Build artifacts are generated in `dist/`:
+
+1. Bundle scripts with Rollup:
+   ```bash
+   npm run build
+   ```
+2. Inline assets and create `dist/coffee-grinder.html`:
+   ```bash
+   node build.js
+   ```
+3. Preview the built file:
+   ```bash
+   npm run serve
+   ```
 
 ## Contributing
 Please see `CONTRIBUTING.md` for guidelines.
