@@ -1,4 +1,4 @@
-const { sanitizeForHTML } = require('../src/scripts/main');
+const { sanitizeForHTML } = require('../src/scripts/utils');
 
 describe('sanitizeForHTML (main)', () => {
   test('escapes HTML characters', () => {

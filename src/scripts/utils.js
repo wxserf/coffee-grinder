@@ -1,3 +1,13 @@
+function sanitizeForHTML(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 function formatJson(data) {
   try {
     return JSON.stringify(data, null, 2);
@@ -66,4 +76,4 @@ function generateMarkdown({ blueprint = {}, meta = {}, toggles = {}, processedMo
   return md;
 }
 
-module.exports = { formatJson, generateMarkdown };
+module.exports = { sanitizeForHTML, formatJson, generateMarkdown };
