@@ -5,6 +5,9 @@
   "main": "src/index.html",
   "scripts": {
     "dev": "python -m http.server 8080 --directory src",
+    "build": "rollup -c build.config.mjs",
+    "serve": "python -m http.server 8080 --directory dist",
+    "test": "jest"
   },
   "keywords": [
     "automation",
