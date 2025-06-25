@@ -1,11 +1,6 @@
-function sanitizeForHTML(str) {
-    if (!str) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+let sanitizeForHTML, formatJson;
+if (typeof module !== 'undefined' && module.exports) {
+    ({ sanitizeForHTML, formatJson } = require('./utils'));
 }
 
 if (typeof self !== 'undefined') {
@@ -253,5 +248,5 @@ self.onmessage = e => {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { sanitizeForHTML };
+  module.exports = { sanitizeForHTML, formatJson };
 }

@@ -83,21 +83,9 @@ function clearAllErrors() {
     clearError(valErr);
     clearError(parseWarn);
 }
-function sanitizeForHTML(str) {
-    if (!str) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
-function formatJson(data) {
-    try {
-        return JSON.stringify(data, null, 2);
-    } catch (e) {
-        return '[Could not format JSON]';
-    }
+let sanitizeForHTML, formatJson;
+if (typeof module !== 'undefined' && module.exports) {
+    ({ sanitizeForHTML, formatJson } = require('./utils'));
 }
 
 // --- Core Logic ---
@@ -443,5 +431,5 @@ if (editor.getValue().trim()) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { sanitizeForHTML };
+    module.exports = { sanitizeForHTML, formatJson };
 }
