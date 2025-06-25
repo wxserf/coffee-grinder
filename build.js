@@ -16,8 +16,20 @@ const workerJsPath = path.join(srcDir, 'scripts', 'worker.js');
 
 const htmlContent = fs.readFileSync(htmlPath, 'utf-8');
 const cssContent = fs.readFileSync(cssPath, 'utf-8');
-const mainJsContent = fs.readFileSync(mainJsPath, 'utf-8');
+let mainJsContent = fs.readFileSync(mainJsPath, 'utf-8');
 const workerJsContent = fs.readFileSync(workerJsPath, 'utf-8');
+
+// Detect if the developer version already inlines the worker using a Blob
+const blobWorkerRegex = /new\s+Worker\(\s*URL\.createObjectURL\(\s*new\s+Blob/;
+const externalWorkerRegex = /const\s+specWorker\s*=\s*new\s+Worker\(['"]scripts\/worker\.js['"]\);/;
+
+if (!blobWorkerRegex.test(mainJsContent) && externalWorkerRegex.test(mainJsContent)) {
+  const workerBlobCode = `
+const workerCode = \`${workerJsContent.replace(/`/g, '\\`')}\`;
+const specWorker = new Worker(URL.createObjectURL(new Blob([workerCode], { type: 'application/javascript' })));
+`;
+  mainJsContent = mainJsContent.replace(externalWorkerRegex, workerBlobCode.trim());
+}
 
 // Inline CSS
 let output = htmlContent.replace(
@@ -29,8 +41,7 @@ let output = htmlContent.replace(
 const workerVar = `const WORKER_CODE = \`${workerJsContent.replace(/`/g, '\\`')}\`;`;
 output = output.replace(
   /<script src="scripts\/main.js"><\/script>/,
-  `<script>\n${workerVar}\n${mainJsContent}\n</script>`
-);
+
 
 fs.writeFileSync(outputFile, output, 'utf-8');
 
