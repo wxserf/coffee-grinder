@@ -1,253 +1,417 @@
-self.onmessage = e => {
-    const { blueprint, toggles } = e.data;
-    let processedModules = [];
-    let warnings = [];
+// --- Config & Initialization ---
+const META_FIELDS = ['preparedBy', 'recipient', 'version', 'objective'];
+const TOGGLE_FIELDS = ['showScenario', 'showConnections', 'showVars', 'showFilters', 'showModuleDetails'];
+const DEFAULT_TOGGLES = {
+    showScenario: true, showConnections: true, showVars: true,
+    showFilters: true, showModuleDetails: true
+};
 
-    function sanitizeForHTML(str) {
-        if (!str) return '';
-        return String(str).replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"').replace(/'/g, '&#039;');
-    }
+// Persist metadata & toggles
+META_FIELDS.forEach(id => {
+  const el = document.getElementById(id);
+  el.value = localStorage.getItem(id) || '';
+  el.addEventListener('input', () => localStorage.setItem(id, el.value));
+});
 
-    function formatJson(data) {
-        try {
-            return JSON.stringify(data, null, 2);
-        } catch (e) {
-            return '[Could not format JSON]';
+TOGGLE_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    const storedValue = localStorage.getItem(`toggle_${id}`);
+    el.checked = storedValue !== null ? (storedValue === 'true') : DEFAULT_TOGGLES[id];
+    el.addEventListener('change', () => {
+        localStorage.setItem(`toggle_${id}`, el.checked);
+        // Re-generate if blueprint is loaded
+        if (blueprint && !genBtn.disabled) {
+             document.getElementById('generateBtn').click();
         }
+    });
+});
+
+// CodeMirror editor
+const editor = CodeMirror.fromTextArea(document.getElementById('jsonInput'), {
+  mode: 'application/json', lineNumbers: true, theme: 'default' // Use default theme
+});
+
+// AJV schema (basic top-level)
+const schema = {
+  type: 'object',
+  required: ['name','flow'],
+  properties: {
+    name: { type: 'string' },
+    flow: { type: 'array' },
+    metadata: { type: 'object' } // Expect metadata
+  },
+  additionalProperties: true
+};
+const ajv = new Ajv();
+const validate = ajv.compile(schema);
+
+// UI refs
+const upload = document.getElementById('jsonUpload');
+const uploadErr = document.getElementById('uploadError');
+const valErr = document.getElementById('validateError');
+const parseWarn = document.getElementById('parseWarning');
+const genBtn = document.getElementById('generateBtn');
+const sampleBtn = document.getElementById('sampleBtn');
+const togglesEl = document.getElementById('toggles');
+const progress = document.getElementById('progress');
+const outArea = document.getElementById('outputArea');
+const tableControls = document.getElementById('tableControls');
+const tableFilter = document.getElementById('tableFilter');
+const copyBtn = document.getElementById('copyBtn');
+const pdfBtn = document.getElementById('exportPdfBtn');
+const mdBtn = document.getElementById('exportMdBtn');
+const txtBtn = document.getElementById('exportTxtBtn');
+
+let blueprint = null;
+let processedModules = []; // Store the result of processing
+
+// --- Utility Functions ---
+function showError(el, msg) {
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function showWarning(msg) {
+    parseWarn.textContent = msg;
+    parseWarn.style.display = 'block';
+}
+function clearError(el) {
+  el.textContent = '';
+  el.style.display = 'none';
+}
+function clearAllErrors() {
+    clearError(uploadErr);
+    clearError(valErr);
+    clearError(parseWarn);
+}
+function sanitizeForHTML(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"').replace(/'/g, '&#039;');
+}
+function formatJson(data) {
+    try {
+        return JSON.stringify(data, null, 2);
+    } catch (e) {
+        return '[Could not format JSON]';
+    }
+}
+
+// --- Core Logic ---
+
+// Validate editor content
+function tryValidate() {
+  clearAllErrors();
+  let data;
+  blueprint = null; // Reset
+  processedModules = []; // Reset
+  try {
+    data = JSON.parse(editor.getValue());
+  } catch (e) {
+    showError(valErr, 'Invalid JSON: ' + e.message);
+    genBtn.disabled = true;
+    return;
+  }
+  if (!validate(data)) {
+    showError(valErr, 'Schema validation failed: ' + ajv.errorsText(validate.errors));
+    genBtn.disabled = true;
+  } else {
+    blueprint = data;
+    genBtn.disabled = false;
+    // Add a simple warning if metadata or scenario details are missing
+    if (!blueprint.metadata || !blueprint.metadata.scenario) {
+        showWarning("Warning: Blueprint may be missing standard 'metadata' or 'metadata.scenario' structure. Some details might not be extracted.");
+    }
+  }
+}
+editor.on('change', tryValidate);
+
+// File upload handler
+upload.addEventListener('change', e => {
+  clearAllErrors();
+  const f = e.target.files[0];
+  if (!f) return;
+  if (f.type !== 'application/json') {
+    showError(uploadErr, 'Please upload a valid JSON file (.json).');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    editor.setValue(reader.result);
+    tryValidate(); // Validate after loading
+  };
+  reader.onerror = () => {
+    showError(uploadErr, 'Error reading file.');
+  };
+  reader.readAsText(f);
+});
+
+// Load sample blueprint
+sampleBtn.addEventListener('click', () => {
+   const sample = {
+    name: 'Sample Recursive Scenario',
+    metadata: {
+        instant: false,
+        scenario: { roundtrips: 1, maxErrors: 3, autoCommit: true, sequential: false }
+    },
+    connections: [{ name: 'Default HTTP', type: 'http', id: 5678 }],
+    variables: [{ name: 'API_KEY', value: '******', type: 'text'}],
+    flow: [
+        { id: '1', module: 'http:request', label: 'Initial GET', parameters: { "__IMTCONN__": 5678, url: "https://example.com/data" }, metadata: { designer: {x:0, y:0}, restore: { parameters: { "__IMTCONN__": { label: 'Default HTTP' } } } }, filter: null },
+        { id: '2', module: 'builtin:BasicRouter', label: 'Check Status', metadata: { designer: {x: 200, y:0}}, routes: [
+            { filter: { conditions: [[{a: "{{1.status_code}}", o:"equal", b:"200"}]]}, flow: [
+                { id: '3', module: 'json:parse', label: 'Parse Result', mapper: { json: "{{1.data}}"}, metadata: { designer: {x:400, y:-100}}},
+                { id: '5', module: 'util:SetVariable2', label: 'Store ID', mapper: { name: "itemID", value: "{{3.id}}"}, metadata: { designer: {x:600, y:-100}}}
+            ]},
+            { filter: null, flow: [ // Fallback path
+                { id: '4', module: 'tools:log', label: 'Log Error Status', mapper: { message: "Non-200 Status: {{1.status_code}}"}, metadata: { designer: {x:400, y:100}}}
+            ]}
+        ]},
+        { id: '6', module: 'http:request', label: 'Process Item', parameters: { "__IMTCONN__": 5678, url: "https://example.com/process/{{5.itemID}}" }, metadata: { designer: {x:800, y:0}, restore: { parameters: { "__IMTCONN__": { label: 'Default HTTP' } } } }, onerror: [
+             { id: '7', module: 'builtin:Break', version: 1, label: 'Retry on Error', mapper: { retry: true, count: 3, interval: 5}, metadata: { designer: {x: 1000, y: 100}}}
+        ]}
+    ]
+   };
+   editor.setValue(JSON.stringify(sample, null, 2));
+   tryValidate();
+});
+
+// --- Web Worker for Processing ---
+const specWorker = new Worker('scripts/worker.js');
+
+// --- Event Handlers ---
+
+// Generate spec
+genBtn.addEventListener('click', () => {
+  if (!blueprint) {
+      showError(valErr, "No valid blueprint loaded.");
+      return;
+  }
+  togglesEl.style.display = 'block'; // Show toggles
+  progress.textContent = 'Processing blueprint...';
+  progress.style.color = 'var(--muted)';
+  outArea.innerHTML = ''; // Clear previous output
+  tableControls.style.display = 'none'; // Hide table controls initially
+  [copyBtn, pdfBtn, mdBtn, txtBtn].forEach(b => b.style.display = 'none'); // Hide export buttons
+
+  const currentToggles = {};
+  TOGGLE_FIELDS.forEach(id => currentToggles[id] = document.getElementById(id).checked);
+
+  specWorker.postMessage({ blueprint: blueprint, toggles: currentToggles });
+});
+
+// Handle worker response
+specWorker.onmessage = e => {
+    const { html, warnings, processedModules: pm } = e.data;
+    processedModules = pm; // Store processed data for export
+
+    outArea.innerHTML = html;
+    if (warnings && warnings.length > 0) {
+        showWarning('Processing Warnings:\n- ' + warnings.join('\n- '));
+    } else {
+        clearError(parseWarn); // Clear previous warnings if successful
     }
 
-    function findConnectionDetails(connId, blueprint) {
-        if (!blueprint.connections || !connId) return { type: 'N/A', label: 'N/A (No ID)' };
-        const conn = blueprint.connections.find(c => c.id === connId);
-        return conn ? { type: conn.type || '?', label: conn.name || '?' } : { type: '?', label: `Not Found (ID: ${connId})` };
+    // Make table sortable if it exists
+    const modulesTable = document.getElementById('modulesTable');
+    if (modulesTable) {
+         sorttable.makeSortable(modulesTable);
+         tableControls.style.display = 'block'; // Show filter
+    } else {
+         tableControls.style.display = 'none';
     }
 
-    function getModuleLabel(moduleData) {
-        // Prioritize top-level label, then metadata label
-        return moduleData.label || (moduleData.metadata && moduleData.metadata.label) || '';
+    activateFeatures(); // Enable filtering and export buttons
+    progress.textContent = 'Specification generated successfully.';
+    progress.style.color = 'green'; // Indicate success
+};
+specWorker.onerror = e => {
+    progress.textContent = 'Error during processing: ' + e.message;
+     progress.style.color = 'var(--error-text)';
+    showError(valErr, 'Worker error: ' + e.message);
+};
+
+
+// --- Feature Activation ---
+function activateFeatures() {
+  tableFilter.oninput = () => {
+    const q = tableFilter.value.toLowerCase().trim();
+    const table = document.getElementById('modulesTable');
+    if (!table) return;
+    table.querySelectorAll('tbody tr').forEach(r => {
+      r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  };
+
+  // Show buttons if there's content
+  if (outArea.innerHTML.trim() !== '') {
+      copyBtn.style.display = 'inline-block';
+      pdfBtn.style.display = 'inline-block';
+      mdBtn.style.display = 'inline-block';
+      txtBtn.style.display = 'inline-block';
+  }
+
+  copyBtn.onclick = () => navigator.clipboard.writeText(generatePlain());
+  pdfBtn.onclick = generatePdf; // Use dedicated function for better options
+  mdBtn.onclick  = () => download('spec.md', generateMarkdown());
+  txtBtn.onclick = () => download('spec.txt', generatePlain());
+}
+
+// --- Export Functions ---
+function generatePdf() {
+    progress.textContent = 'Generating PDF...';
+    const element = outArea; // Select the output area
+    const opt = {
+      margin:       0.5, // Inches
+      filename:     `${blueprint?.name || 'blueprint'}_spec.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true }, // Increase scale for better resolution
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' } // Landscape more likely needed
+    };
+    html2pdf().from(element).set(opt).save().then(() => {
+         progress.textContent = 'PDF generated.';
+    }).catch(err => {
+        progress.textContent = 'PDF generation failed.';
+        showError(valErr, `PDF Error: ${err}`);
+    });
+}
+
+function generateMarkdown() {
+    let md = `# Blueprint Specification: ${blueprint?.name || 'Untitled'}\n\n`;
+    const meta = META_FIELDS.reduce((acc, id) => { acc[id] = document.getElementById(id).value; return acc; }, {});
+    if (meta.preparedBy) md += `**Prepared By:** ${meta.preparedBy}\n`;
+    if (meta.recipient) md += `**Recipient:** ${meta.recipient}\n`;
+    if (meta.version) md += `**Version:** ${meta.version}\n`;
+    if (meta.objective) md += `**Objective:** ${meta.objective}\n`;
+    md += "\n";
+
+    const toggles = TOGGLE_FIELDS.reduce((acc, id) => { acc[id] = document.getElementById(id).checked; return acc; }, {});
+
+    if (toggles.showScenario && blueprint?.metadata?.scenario) {
+        md += "## Scenario Details\n";
+        const s = blueprint.metadata.scenario;
+        md += `- **Type:** ${blueprint.metadata.instant ? 'Instant (Webhook)' : 'Scheduled / On Demand'}\n`;
+        md += `- **Sequential:** ${s.sequential ? 'Yes' : 'No'}\n`;
+        // Add other scenario details similarly...
+        md += "\n";
     }
 
-     function getConnectionInfo(moduleData, blueprint) {
-        let connLabel = 'N/A';
-        let connType = 'N/A';
-        let connId = null;
-
-        // 1. Check parameters for __IMTCONN__ (most common)
-        if (moduleData.parameters && moduleData.parameters.__IMTCONN__) {
-            connId = moduleData.parameters.__IMTCONN__;
-            // Try getting label from restore metadata first
-            if (moduleData.metadata?.restore?.parameters?.__IMTCONN__?.label) {
-                connLabel = moduleData.metadata.restore.parameters.__IMTCONN__.label;
-            }
-            const details = findConnectionDetails(connId, blueprint);
-             connType = details.type;
-             // If label wasn't in restore, use the one from connection list (or keep 'Not Found')
-             if (connLabel === 'N/A' || connLabel.startsWith('Not Found')) {
-                connLabel = details.label;
-             }
-
-        // 2. Check for __IMTHOOK__ (webhooks)
-        } else if (moduleData.parameters && moduleData.parameters.__IMTHOOK__) {
-            connType = 'Webhook'; // Assume type
-            connId = moduleData.parameters.__IMTHOOK__;
-             // Webhook labels are usually in restore metadata
-             if (moduleData.metadata?.restore?.parameters?.__IMTHOOK__?.label) {
-                connLabel = moduleData.metadata.restore.parameters.__IMTHOOK__.label;
-             } else {
-                 connLabel = `Webhook (${connId})`; // Fallback label
-             }
-
-        // 3. Check metadata directly for connection (less common)
-         } else if (moduleData.metadata?.connection) {
-              connLabel = moduleData.metadata.connection.label || 'Unknown (Metadata)';
-              connType = moduleData.metadata.connection.type || '? (Metadata)';
-         }
-
-         // Ensure N/A if no ID found
-         if (connId === null && connLabel === 'N/A') {
-             connType = 'N/A';
-         } else if (connLabel === 'N/A') {
-            // If we have an ID but no label found anywhere
-            connLabel = `ID: ${connId || '?'}`;
-         }
-
-        return { type: connType, label: connLabel };
-    }
-
-    function getFilterDetails(moduleData) {
-        if (!moduleData.filter) return { name: '', conditions: null };
-        return {
-            name: moduleData.filter.name || '',
-            conditions: moduleData.filter.conditions || null
-        };
-    }
-
-     function getErrorHandlerType(moduleData) {
-         if (!moduleData.onerror || moduleData.onerror.length === 0) return 'None';
-         // Simple check for common directives - more complex logic could be added
-         const firstHandler = moduleData.onerror[0];
-         if (!firstHandler || !firstHandler.module) return 'Custom/Unknown';
-         if (firstHandler.module === 'builtin:Break') return 'Break (Retry/Fail)';
-         if (firstHandler.module === 'builtin:Resume') return 'Resume (Ignore)';
-         if (firstHandler.module === 'builtin:Commit') return 'Commit';
-         if (firstHandler.module === 'builtin:Rollback') return 'Rollback';
-         return 'Custom (' + (firstHandler.label || firstHandler.module) + ')';
-     }
-
-
-    // Recursive function to process modules
-    function processModules(moduleList, pathPrefix = '', level = 0) {
-        if (!moduleList || !Array.isArray(moduleList)) {
-             warnings.push(`Invalid module list encountered at path: ${pathPrefix || 'root'}`);
-             return;
-        }
-
-        moduleList.forEach((mod, index) => {
-            if (!mod || typeof mod !== 'object' || !mod.id) {
-                warnings.push(`Skipping invalid module data at index ${index}, path: ${pathPrefix || 'root'}`);
-                return; // Skip invalid module entries
-            }
-
-            const moduleParts = (mod.module || 'unknown:unknown').split(':');
-            const app = moduleParts[0];
-            const action = moduleParts[1] || 'unknown';
-            const connection = getConnectionInfo(mod, blueprint);
-            const filter = getFilterDetails(mod);
-            const errorHandlerType = getErrorHandlerType(mod);
-            const label = getModuleLabel(mod);
-
-            processedModules.push({
-                id: mod.id,
-                app: app,
-                action: action,
-                label: label,
-                connectionType: connection.type,
-                connectionLabel: connection.label,
-                filterName: filter.name,
-                filterConditions: filter.conditions,
-                errorHandler: errorHandlerType,
-                path: pathPrefix,
-                level: level,
-                hasRoutes: mod.routes && mod.routes.length > 0,
-                hasErrorHandlerModules: mod.onerror && mod.onerror.length > 0
-            });
-
-            // Recurse for Routers
-            if (mod.routes && mod.routes.length > 0) {
-                mod.routes.forEach((route, routeIndex) => {
-                    const routeFilter = getFilterDetails(route); // Filter might be on the route itself
-                    const routePath = `${pathPrefix}[Router ${mod.id}] Path ${routeIndex + 1}`;
-                    // Add a pseudo-module entry for the path itself? Maybe not, keep it clean.
-                    // Process modules within this route's flow
-                    processModules(route.flow, routePath + ' > ', level + 1);
-                });
-            }
-
-            // Recurse for Error Handlers
-            if (mod.onerror && mod.onerror.length > 0) {
-                 const errorPath = `${pathPrefix}[Error Handler for ${mod.id}]`;
-                 // Process modules within the error handler
-                 processModules(mod.onerror, errorPath + ' > ', level + 1);
-            }
-        });
-    }
-
-    // Start processing from the top-level flow
-    processModules(blueprint.flow);
-
-    // --- Generate HTML Output ---
-    let html = '';
-
-    // Scenario Details Panel
-    if (toggles.showScenario) {
-      html += '<div class="panel"><h3>Scenario Details</h3>';
-      html += `<p><strong>Name:</strong> ${sanitizeForHTML(blueprint.name)}</p>`;
-      if (blueprint.metadata && blueprint.metadata.scenario) {
-          const s = blueprint.metadata.scenario;
-          html += `<p><strong>Type:</strong> ${blueprint.metadata.instant ? 'Instant (Webhook)' : 'Scheduled / On Demand'}</p>`;
-          html += `<p><strong>Sequential:</strong> ${s.sequential ? 'Yes' : 'No'}</p>`;
-          html += `<p><strong>Max Errors:</strong> ${s.maxErrors ?? 'Default'}</p>`;
-          html += `<p><strong>Auto Commit:</strong> ${s.autoCommit ? 'Yes' : 'No'}</p>`;
-          if(s.autoCommitTriggerLast !== undefined) html += `<p><strong>Commit on Last Trigger:</strong> ${s.autoCommitTriggerLast ? 'Yes' : 'No'}</p>`;
-          if(s.confidential !== undefined) html += `<p><strong>Confidential:</strong> ${s.confidential ? 'Yes' : 'No'}</p>`;
-          if(s.dataloss !== undefined) html += `<p><strong>Data Loss Risk:</strong> ${s.dataloss ? 'Yes' : 'No'}</p>`;
-          if(s.dlq !== undefined) html += `<p><strong>DLQ Enabled:</strong> ${s.dlq ? 'Yes' : 'No'}</p>`;
-      } else {
-          html += '<p><em>Scenario metadata details not found or incomplete.</em></p>';
-      }
-      html += '</div>';
-    }
-
-    // Connections Panel
-    if (toggles.showConnections && blueprint.connections && blueprint.connections.length > 0) {
-        html += '<div class="panel"><h3>Connections Used</h3><ul>';
+    if (toggles.showConnections && blueprint?.connections?.length > 0) {
+        md += "## Connections Used\n";
         blueprint.connections.forEach(c => {
-             html += `<li><strong>${sanitizeForHTML(c.name || 'Unnamed')}</strong> (Type: ${sanitizeForHTML(c.type || '?')}, ID: ${c.id || '?'})</li>`;
+            md += `- **${c.name || 'Unnamed'}** (Type: ${c.type || '?'}, ID: ${c.id || '?'})\n`;
         });
-        html += '</ul></div>';
-    } else if (toggles.showConnections) {
-         html += '<div class="panel"><h3>Connections Used</h3><p><em>No top-level connections defined in the blueprint.</em></p></div>';
+        md += "\n";
     }
 
-    // Variables Panel
-    if (toggles.showVars && blueprint.variables && blueprint.variables.length > 0) {
-        html += '<div class="panel"><h3>Variables Defined</h3><ul>';
-        blueprint.variables.forEach(v => {
-            html += `<li><strong>${sanitizeForHTML(v.name || 'Unnamed')}</strong> (Type: ${sanitizeForHTML(v.type || '?')}, Value: ${v.value ? '******' : 'Not Set'})</li>`; // Obscure value
+    if (toggles.showVars && blueprint?.variables?.length > 0) {
+        md += "## Variables Defined\n";
+         blueprint.variables.forEach(v => {
+            md += `- **${v.name || 'Unnamed'}** (Type: ${v.type || '?'})\n`; // Don't show value
         });
-        html += '</ul></div>';
-    } else if (toggles.showVars) {
-        html += '<div class="panel"><h3>Variables Defined</h3><p><em>No top-level variables defined in the blueprint.</em></p></div>';
+        md += "\n";
     }
 
-    // Module Details Table
     if (toggles.showModuleDetails && processedModules.length > 0) {
-        html += '<div class="panel"><h3>Module Details</h3>';
-        html += '<table id="modulesTable" class="sortable"><thead><tr>'; // Added sortable class
-        html += '<th>ID</th>';
-        html += '<th>Module / Path</th>';
-        html += '<th>Label</th>';
-        html += '<th>Connection</th>';
-        if (toggles.showFilters) html += '<th>Filter</th>';
-        html += '<th>Error Handler</th>';
-        html += '</tr></thead><tbody>';
+         md += "## Module Details\n\n";
+         // Header row
+         md += "| ID | Path / Module | Label | Connection |";
+         if (toggles.showFilters) md += " Filter |";
+         md += " Error Handler |\n";
+         // Separator row
+         md += "|---|---|---|---|";
+         if (toggles.showFilters) md += "---|";
+         md += "---|\n";
 
-        processedModules.forEach(m => {
-            html += '<tr>';
-            html += `<td>${m.id}</td>`;
-
-            // Module / Path cell with indentation
-            let pathDisplay = sanitizeForHTML(m.path);
-            // Clean up path display a bit
-            pathDisplay = pathDisplay.replace(/ > $/, '').replace(/\[Router (\d+)\]/g, 'R$1').replace(/\[Error Handler for (\d+)\]/g, 'Err$1');
-             html += `<td class="path-cell indent-${m.level}">`;
-             if (pathDisplay) html += `<span style="color:var(--muted); font-size:0.9em;">${pathDisplay} &rarr; </span>`;
-             html += `<strong>${sanitizeForHTML(m.app)}:${sanitizeForHTML(m.action)}</strong></td>`;
-
-
-            html += `<td>${sanitizeForHTML(m.label)}</td>`;
-            html += `<td>${m.connectionLabel !== 'N/A' ? `${sanitizeForHTML(m.connectionLabel)} <span style="color:var(--muted); font-size:0.9em;">(${sanitizeForHTML(m.connectionType)})</span>` : '<em>None</em>'}</td>`;
-
-             if (toggles.showFilters) {
-                 html += '<td>';
-                 if (m.filterConditions) {
-                     html += sanitizeForHTML(m.filterName) ? `<em>${sanitizeForHTML(m.filterName)}:</em><br/>` : '';
-                     html += `<pre>${sanitizeForHTML(formatJson(m.filterConditions))}</pre>`;
-                 } else {
-                     html += '<em>None</em>';
-                 }
-                 html += '</td>';
+         // Data rows
+         processedModules.forEach(m => {
+             let pathDisplay = m.path.replace(/ > $/, '').replace(/\[Router (\d+)\]/g, 'R$1').replace(/\[Error Handler for (\d+)\]/g, 'Err$1');
+             let moduleDesc = `${pathDisplay ? pathDisplay + ' → ' : ''} **${m.app}:${m.action}**`;
+             let connectionDesc = m.connectionLabel !== 'N/A' ? `${m.connectionLabel} (${m.connectionType})` : '*None*';
+             let filterDesc = '*None*';
+             if (toggles.showFilters && m.filterConditions) {
+                  filterDesc = `${m.filterName ? `*${m.filterName}*:<br/>` : ''}\`\`\`json\n${formatJson(m.filterConditions)}\n\`\`\``;
+                  filterDesc = filterDesc.replace(/\|/g, '\\|'); // Escape pipes for markdown table
              }
+             let errorDesc = m.errorHandler !== 'None' ? m.errorHandler : '*None*';
 
-             html += `<td>${m.errorHandler !== 'None' ? sanitizeForHTML(m.errorHandler) : '<em>None</em>'}</td>`;
-
-            html += '</tr>';
-        });
-        html += '</tbody></table>';
-        html += '</div>'; // Close panel
-    } else if (toggles.showModuleDetails) {
-         html += '<div class="panel"><h3>Module Details</h3><p><em>No modules found or processed in the blueprint flow.</em></p></div>';
+             md += `| ${m.id} | ${moduleDesc} | ${m.label || ''} | ${connectionDesc} |`;
+             if (toggles.showFilters) md += ` ${filterDesc} |`;
+             md += ` ${errorDesc} |\n`;
+         });
     }
 
-    postMessage({ html: html, warnings: warnings, processedModules: processedModules });
+  return md;
+}
+
+function generatePlain() {
+   let txt = `Blueprint Specification: ${blueprint?.name || 'Untitled'}\n`;
+   txt += "===============================================\n";
+   const meta = META_FIELDS.reduce((acc, id) => { acc[id] = document.getElementById(id).value; return acc; }, {});
+   if (meta.preparedBy) txt += `Prepared By: ${meta.preparedBy}\n`;
+   if (meta.recipient) txt += `Recipient: ${meta.recipient}\n`;
+   if (meta.version) txt += `Version: ${meta.version}\n`;
+   if (meta.objective) txt += `Objective: ${meta.objective}\n`;
+   txt += "\n";
+
+   const toggles = TOGGLE_FIELDS.reduce((acc, id) => { acc[id] = document.getElementById(id).checked; return acc; }, {});
+
+    if (toggles.showScenario && blueprint?.metadata?.scenario) {
+        txt += "## Scenario Details\n";
+        const s = blueprint.metadata.scenario;
+        txt += `- Type: ${blueprint.metadata.instant ? 'Instant (Webhook)' : 'Scheduled / On Demand'}\n`;
+        txt += `- Sequential: ${s.sequential ? 'Yes' : 'No'}\n`;
+        // Add other scenario details similarly...
+        txt += "\n";
+    }
+
+    if (toggles.showConnections && blueprint?.connections?.length > 0) {
+        txt += "## Connections Used\n";
+        blueprint.connections.forEach(c => {
+            txt += `- ${c.name || 'Unnamed'} (Type: ${c.type || '?'}, ID: ${c.id || '?'})\n`;
+        });
+        txt += "\n";
+    }
+
+    if (toggles.showVars && blueprint?.variables?.length > 0) {
+        txt += "## Variables Defined\n";
+         blueprint.variables.forEach(v => {
+            txt += `- ${v.name || 'Unnamed'} (Type: ${v.type || '?'})\n`;
+        });
+        txt += "\n";
+    }
+
+    if (toggles.showModuleDetails && processedModules.length > 0) {
+         txt += "## Module Details\n";
+         processedModules.forEach(m => {
+             let indent = '  '.repeat(m.level);
+             let pathDisplay = m.path.replace(/ > $/, '').replace(/\[Router (\d+)\]/g, 'R$1').replace(/\[Error Handler for (\d+)\]/g, 'Err$1');
+txt += `${indent}[${m.id}] ${pathDisplay ? pathDisplay + ' -> ' : ''}${m.app}:${m.action}\`;`;
+             if (m.label) txt += ` (${m.label})`;
+             txt += `\n`;
+             if (m.connectionLabel !== 'N/A') txt += `${indent}  Connection: ${m.connectionLabel} (${m.connectionType})\n`;
+             if (toggles.showFilters && m.filterConditions) {
+                  txt += `${indent}  Filter: ${m.filterName || 'Unnamed'}\n${indent}    ${formatJson(m.filterConditions)}\n`;
+             }
+             if (m.errorHandler !== 'None') txt += `${indent}  Error Handler: ${m.errorHandler}\n`;
+             txt += "\n"; // Add space between modules
+         });
+    }
+  return txt;
+}
+
+function download(filename, content) {
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' }); // Ensure UTF-8
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a); // Required for Firefox
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// --- Initial Load ---
+// Try to validate if there's content on load (e.g., from browser cache)
+if (editor.getValue().trim()) {
+    tryValidate();
 }
