@@ -1,3 +1,14 @@
+function sanitizeForHTML(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+if (typeof self !== 'undefined') {
 self.onmessage = e => {
   const { blueprint, toggles } = e.data;
   let processedModules = [];
@@ -238,4 +249,9 @@ self.onmessage = e => {
   }
 
   postMessage({ html: html, warnings: warnings, processedModules: processedModules });
+}
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { sanitizeForHTML };
 }
