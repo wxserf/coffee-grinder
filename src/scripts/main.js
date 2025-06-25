@@ -175,7 +175,27 @@ sampleBtn.addEventListener('click', () => {
 });
 
 // --- Web Worker for Processing ---
-const specWorker = new Worker('scripts/worker.js');
+let specWorker = null;
+
+function initWorker() {
+    let codePromise;
+    if (typeof WORKER_CODE !== 'undefined') {
+        codePromise = Promise.resolve(WORKER_CODE);
+    } else {
+        codePromise = fetch('scripts/worker.js').then(r => r.text());
+    }
+
+    return codePromise
+        .then(code => {
+            const blob = new Blob([code], { type: 'application/javascript' });
+            specWorker = new Worker(URL.createObjectURL(blob));
+            specWorker.onmessage = handleWorkerMessage;
+            specWorker.onerror = handleWorkerError;
+        })
+        .catch(err => showError(valErr, 'Failed to load worker: ' + err));
+}
+
+initWorker();
 
 // --- Event Handlers ---
 
@@ -198,8 +218,8 @@ genBtn.addEventListener('click', () => {
   specWorker.postMessage({ blueprint: blueprint, toggles: currentToggles });
 });
 
-// Handle worker response
-specWorker.onmessage = e => {
+// Worker message handlers
+function handleWorkerMessage(e) {
     const { html, warnings, processedModules: pm } = e.data;
     processedModules = pm; // Store processed data for export
 
@@ -222,12 +242,13 @@ specWorker.onmessage = e => {
     activateFeatures(); // Enable filtering and export buttons
     progress.textContent = 'Specification generated successfully.';
     progress.style.color = 'green'; // Indicate success
-};
-specWorker.onerror = e => {
+}
+
+function handleWorkerError(e) {
     progress.textContent = 'Error during processing: ' + e.message;
-     progress.style.color = 'var(--error-text)';
+    progress.style.color = 'var(--error-text)';
     showError(valErr, 'Worker error: ' + e.message);
-};
+}
 
 
 // --- Feature Activation ---
