@@ -61,7 +61,9 @@ Build artifacts are generated in `dist/`:
    ```
 
 ## Contributing
-Please see `CONTRIBUTING.md` for guidelines.
+Contributions are welcome! Fork the repository and create a feature branch
+from `main`. When you're ready, open a pull request. See
+[`CONTRIBUTING.md`](CONTRIBUTING.md) for full guidelines.
 
 ## License
 This project is licensed under the MIT License.
