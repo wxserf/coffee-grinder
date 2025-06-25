@@ -85,7 +85,12 @@ function clearAllErrors() {
 }
 function sanitizeForHTML(str) {
     if (!str) return '';
-    return String(str).replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"').replace(/'/g, '&#039;');
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 function formatJson(data) {
     try {
@@ -404,8 +409,8 @@ function generatePlain() {
          txt += "## Module Details\n";
          processedModules.forEach(m => {
              let indent = '  '.repeat(m.level);
-             let pathDisplay = m.path.replace(/ > $/, '').replace(/\[Router (\d+)\]/g, 'R$1').replace(/\[Error Handler for (\d+)\]/g, 'Err$1');
-txt += `${indent}[${m.id}] ${pathDisplay ? pathDisplay + ' -> ' : ''}${m.app}:${m.action}\`;`;
+            let pathDisplay = m.path.replace(/ > $/, '').replace(/\[Router (\d+)\]/g, 'R$1').replace(/\[Error Handler for (\d+)\]/g, 'Err$1');
+            txt += `${indent}[${m.id}] ${pathDisplay ? pathDisplay + ' -> ' : ''}${m.app}:${m.action}`;
              if (m.label) txt += ` (${m.label})`;
              txt += `\n`;
              if (m.connectionLabel !== 'N/A') txt += `${indent}  Connection: ${m.connectionLabel} (${m.connectionType})\n`;
@@ -435,4 +440,8 @@ function download(filename, content) {
 // Try to validate if there's content on load (e.g., from browser cache)
 if (editor.getValue().trim()) {
     tryValidate();
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { sanitizeForHTML };
 }
