@@ -1,4 +1,3 @@
-const { sanitizeForHTML } = require('../src/scripts/utils');
 
 describe('sanitizeForHTML', () => {
   test('escapes HTML characters', () => {
@@ -7,5 +6,18 @@ describe('sanitizeForHTML', () => {
 
   test('returns empty string for nullish input', () => {
     expect(sanitizeForHTML(null)).toBe('');
+  });
+});
+
+describe('formatJson (worker)', () => {
+  test('pretty prints objects', () => {
+    const obj = { a: 1 };
+    expect(formatJson(obj)).toBe('{\n  "a": 1\n}');
+  });
+
+  test('handles circular structures gracefully', () => {
+    const a = {};
+    a.self = a;
+    expect(formatJson(a)).toBe('[Could not format JSON]');
   });
 });
