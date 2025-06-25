@@ -85,7 +85,12 @@ function clearAllErrors() {
 }
 function sanitizeForHTML(str) {
     if (!str) return '';
-    return String(str).replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"').replace(/'/g, '&#039;');
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 function formatJson(data) {
     try {
@@ -435,4 +440,8 @@ function download(filename, content) {
 // Try to validate if there's content on load (e.g., from browser cache)
 if (editor.getValue().trim()) {
     tryValidate();
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { sanitizeForHTML };
 }
