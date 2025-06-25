@@ -25,23 +25,11 @@ let output = htmlContent.replace(
   `<style>\n${cssContent}\n</style>`
 );
 
-// Inline main.js and worker.js
-// Remove external script reference to main.js
+// Inline main.js and provide worker code variable for offline build
+const workerVar = `const WORKER_CODE = \`${workerJsContent.replace(/`/g, '\\`')}\`;`;
 output = output.replace(
   /<script src="scripts\/main.js"><\/script>/,
-  `<script>\n${mainJsContent}\n</script>`
-);
-
-// Replace worker instantiation to inline worker code as Blob
-const workerBlobCode = `
-const workerCode = \`${workerJsContent.replace(/`/g, '\\`')}\`;
-const specWorker = new Worker(URL.createObjectURL(new Blob([workerCode], { type:'application/javascript' })));
-`;
-
-// Replace the line: const specWorker = new Worker('scripts/worker.js');
-output = output.replace(
-  /const specWorker = new Worker\('scripts\/worker\.js'\);/,
-  workerBlobCode.trim()
+  `<script>\n${workerVar}\n${mainJsContent}\n</script>`
 );
 
 fs.writeFileSync(outputFile, output, 'utf-8');
