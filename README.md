@@ -60,6 +60,12 @@ Build artifacts are generated in `dist/`:
    npm run serve
    ```
 
+### Running Tests
+Execute the unit tests with:
+```bash
+npm test
+```
+
 ## Contributing
 Contributions are welcome! Fork the repository and create a feature branch
 from `main`. When you're ready, open a pull request. See
