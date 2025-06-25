@@ -37,12 +37,10 @@ let output = htmlContent.replace(
   `<style>\n${cssContent}\n</style>`
 );
 
-// Inline main.js and worker.js
-// Remove external script reference to main.js
+// Inline main.js and provide worker code variable for offline build
+const workerVar = `const WORKER_CODE = \`${workerJsContent.replace(/`/g, '\\`')}\`;`;
 output = output.replace(
   /<script src="scripts\/main.js"><\/script>/,
-  `<script>\n${mainJsContent}\n</script>`
-);
 
 
 fs.writeFileSync(outputFile, output, 'utf-8');
