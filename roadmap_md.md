@@ -28,7 +28,7 @@ The checklist is grouped by project phase so you can work from the ground up: cl
 
 | ID | What to do | Output when done | Depends on | Status |
 |----|------------|------------------|------------|---------|
-| 1.1.1.a | Make new folders: `src/components/`, `src/services/`, `src/workers/`, `src/validators/`, `src/utils/`, `src/templates/`, and `tests/`. | Folders exist; npm test still runs. | — | ⬜ |
+| 1.1.1.a | Make new folders: `src/components/`, `src/services/`, `src/workers/`, `src/validators/`, `src/utils/`, `src/templates/`, and `tests/`. | Folders exist; npm test still runs. | — | ✅ |
 | 1.1.1.b | Move all DOM code to `src/components/ui/` (split into `buttons.js`, `tables.js`, `modals.js`). Update imports. | ESLint passes. | 1.1.1.a | ⬜ |
 | 1.1.1.c | Rename the worker to `src/workers/specWorker.js` and export `processBlueprint()` for tests. | Build and Jest are green. | 1.1.1.a | ⬜ |
 | 1.1.1.d | Add Rollup path aliases (`@components`, `@services`, …) in `rollup.config.js`. | Builds work with new paths. | 1.1.1.b-c | ⬜ |
