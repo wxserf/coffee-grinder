@@ -1,3 +1,6 @@
+import { showError, showWarning, clearError, clearAllErrors } from '../components/ui/modals.js';
+import { activateExportButtons, generatePdf, download } from '../components/ui/buttons.js';
+import { setupTableFilter, makeSortable } from '../components/ui/tables.js';
 // --- Config & Initialization ---
 const META_FIELDS = ['preparedBy', 'recipient', 'version', 'objective'];
 const TOGGLE_FIELDS = ['showScenario', 'showConnections', 'showVars', 'showFilters', 'showModuleDetails'];
@@ -66,23 +69,6 @@ let blueprint = null;
 let processedModules = []; // Store the result of processing
 
 // --- Utility Functions ---
-function showError(el, msg) {
-  el.textContent = msg;
-  el.style.display = 'block';
-}
-function showWarning(msg) {
-    parseWarn.textContent = msg;
-    parseWarn.style.display = 'block';
-}
-function clearError(el) {
-  el.textContent = '';
-  el.style.display = 'none';
-}
-function clearAllErrors() {
-    clearError(uploadErr);
-    clearError(valErr);
-    clearError(parseWarn);
-}
 let sanitizeForHTML, formatJson;
 if (typeof module !== 'undefined' && module.exports) {
     ({ sanitizeForHTML, formatJson } = require('./utils'));
@@ -92,7 +78,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
 // Validate editor content
 function tryValidate() {
-  clearAllErrors();
+  clearAllErrors(uploadErr, valErr, parseWarn);
   let data;
   blueprint = null; // Reset
   processedModules = []; // Reset
@@ -111,7 +97,7 @@ function tryValidate() {
     genBtn.disabled = false;
     // Add a simple warning if metadata or scenario details are missing
     if (!blueprint.metadata || !blueprint.metadata.scenario) {
-        showWarning("Warning: Blueprint may be missing standard 'metadata' or 'metadata.scenario' structure. Some details might not be extracted.");
+        showWarning(parseWarn, "Warning: Blueprint may be missing standard 'metadata' or 'metadata.scenario' structure. Some details might not be extracted.");
     }
   }
 }
@@ -119,7 +105,7 @@ editor.on('change', tryValidate);
 
 // File upload handler
 upload.addEventListener('change', e => {
-  clearAllErrors();
+  clearAllErrors(uploadErr, valErr, parseWarn);
   const f = e.target.files[0];
   if (!f) return;
   if (f.type !== 'application/json') {
@@ -218,7 +204,7 @@ function handleWorkerMessage(e) {
 
     outArea.innerHTML = html;
     if (warnings && warnings.length > 0) {
-        showWarning('Processing Warnings:\n- ' + warnings.join('\n- '));
+        showWarning(parseWarn, 'Processing Warnings:\n- ' + warnings.join('\n- '));
     } else {
         clearError(parseWarn); // Clear previous warnings if successful
     }
@@ -226,7 +212,7 @@ function handleWorkerMessage(e) {
     // Make table sortable if it exists
     const modulesTable = document.getElementById('modulesTable');
     if (modulesTable) {
-         sorttable.makeSortable(modulesTable);
+         makeSortable(modulesTable);
          tableControls.style.display = 'block'; // Show filter
     } else {
          tableControls.style.display = 'none';
@@ -246,47 +232,23 @@ function handleWorkerError(e) {
 
 // --- Feature Activation ---
 function activateFeatures() {
-  tableFilter.oninput = () => {
-    const q = tableFilter.value.toLowerCase().trim();
-    const table = document.getElementById('modulesTable');
-    if (!table) return;
-    table.querySelectorAll('tbody tr').forEach(r => {
-      r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
-    });
-  };
-
-  // Show buttons if there's content
-  if (outArea.innerHTML.trim() !== '') {
-      copyBtn.style.display = 'inline-block';
-      pdfBtn.style.display = 'inline-block';
-      mdBtn.style.display = 'inline-block';
-      txtBtn.style.display = 'inline-block';
-  }
-
-  copyBtn.onclick = () => navigator.clipboard.writeText(generatePlain());
-  pdfBtn.onclick = generatePdf; // Use dedicated function for better options
-  mdBtn.onclick  = () => download('spec.md', generateMarkdown());
-  txtBtn.onclick = () => download('spec.txt', generatePlain());
+  setupTableFilter(tableFilter);
+  activateExportButtons(
+    outArea,
+    copyBtn,
+    pdfBtn,
+    mdBtn,
+    txtBtn,
+    {
+      copyHandler: () => navigator.clipboard.writeText(generatePlain()),
+      pdfHandler: () => generatePdf(outArea, blueprint, progress, msg => showError(valErr, msg)),
+      mdHandler: () => download("spec.md", generateMarkdown()),
+      txtHandler: () => download("spec.txt", generatePlain())
+    }
+  );
 }
 
 // --- Export Functions ---
-function generatePdf() {
-    progress.textContent = 'Generating PDF...';
-    const element = outArea; // Select the output area
-    const opt = {
-      margin:       0.5, // Inches
-      filename:     `${blueprint?.name || 'blueprint'}_spec.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true }, // Increase scale for better resolution
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' } // Landscape more likely needed
-    };
-    html2pdf().from(element).set(opt).save().then(() => {
-         progress.textContent = 'PDF generated.';
-    }).catch(err => {
-        progress.textContent = 'PDF generation failed.';
-        showError(valErr, `PDF Error: ${err}`);
-    });
-}
 
 function generateMarkdown() {
     let md = `# Blueprint Specification: ${blueprint?.name || 'Untitled'}\n\n`;
@@ -412,17 +374,6 @@ function generatePlain() {
   return txt;
 }
 
-function download(filename, content) {
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' }); // Ensure UTF-8
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a); // Required for Firefox
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
 
 // --- Initial Load ---
 // Try to validate if there's content on load (e.g., from browser cache)
