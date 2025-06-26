@@ -1,24 +1,25 @@
 let sanitizeForHTML, formatJson;
-if (typeof module !== 'undefined' && module.exports) {
-    ({ sanitizeForHTML, formatJson } = require('./utils'));
-}
 
-// Fallback helper in case utils cannot be loaded (browser worker environment)
-let formatJson = function (data) {
-    try {
-        return JSON.stringify(data, null, 2);
-    } catch (e) {
-        return '[Could not format JSON]';
-    }
-};
-
-// Use shared implementation when running under Node for tests
 if (typeof module !== 'undefined' && module.exports) {
+  ({ sanitizeForHTML, formatJson } = require('./utils'));
+} else {
+  sanitizeForHTML = str => {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  };
+
+  formatJson = data => {
     try {
-        ({ formatJson } = require('./utils'));
+      return JSON.stringify(data, null, 2);
     } catch (_) {
-        // ignore, fallback to local implementation
+      return '[Could not format JSON]';
     }
+  };
 }
 
 if (typeof self !== 'undefined') {
