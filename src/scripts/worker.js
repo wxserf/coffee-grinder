@@ -1,3 +1,30 @@
+<<<<<<< codex/fix-duplicate-formatjson-declaration
+let sanitizeForHTML;
+let formatJson;
+
+if (typeof module !== 'undefined' && module.exports) {
+    // Node environment - reuse implementations from utils for tests
+    ({ sanitizeForHTML, formatJson } = require('./utils'));
+} else {
+    // Browser worker fallback implementations
+    sanitizeForHTML = function(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    };
+
+    formatJson = function(data) {
+        try {
+            return JSON.stringify(data, null, 2);
+        } catch (e) {
+            return '[Could not format JSON]';
+        }
+    };
+=======
 let sanitizeForHTML, formatJson;
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -20,6 +47,7 @@ if (typeof module !== 'undefined' && module.exports) {
       return '[Could not format JSON]';
     }
   };
+>>>>>>> master
 }
 
 if (typeof self !== 'undefined') {
