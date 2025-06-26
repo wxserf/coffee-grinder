@@ -1,4 +1,7 @@
 // --- Config & Initialization ---
+const { persistFields, persistToggles, setupExportButtons, toggleExportButtons, generatePdf, generateMarkdown, generatePlain, download } = require("../components/ui/buttons");
+const { initFilter, makeSortable } = require("../components/ui/tables");
+const { showError, showWarning, clearError, clearAllErrors } = require("../components/ui/modals");
 const META_FIELDS = ['preparedBy', 'recipient', 'version', 'objective'];
 const TOGGLE_FIELDS = ['showScenario', 'showConnections', 'showVars', 'showFilters', 'showModuleDetails'];
 const DEFAULT_TOGGLES = {
@@ -7,24 +10,11 @@ const DEFAULT_TOGGLES = {
 };
 
 // Persist metadata & toggles
-META_FIELDS.forEach(id => {
-  const el = document.getElementById(id);
-  el.value = localStorage.getItem(id) || '';
-  el.addEventListener('input', () => localStorage.setItem(id, el.value));
+persistFields(META_FIELDS);
+persistToggles(TOGGLE_FIELDS, DEFAULT_TOGGLES, () => {
+  if (blueprint && !genBtn.disabled) document.getElementById("generateBtn").click();
 });
 
-TOGGLE_FIELDS.forEach(id => {
-    const el = document.getElementById(id);
-    const storedValue = localStorage.getItem(`toggle_${id}`);
-    el.checked = storedValue !== null ? (storedValue === 'true') : DEFAULT_TOGGLES[id];
-    el.addEventListener('change', () => {
-        localStorage.setItem(`toggle_${id}`, el.checked);
-        // Re-generate if blueprint is loaded
-        if (blueprint && !genBtn.disabled) {
-             document.getElementById('generateBtn').click();
-        }
-    });
-});
 
 // CodeMirror editor
 const editor = CodeMirror.fromTextArea(document.getElementById('jsonInput'), {
@@ -246,186 +236,21 @@ function handleWorkerError(e) {
 
 // --- Feature Activation ---
 function activateFeatures() {
-  tableFilter.oninput = () => {
-    const q = tableFilter.value.toLowerCase().trim();
-    const table = document.getElementById('modulesTable');
-    if (!table) return;
-    table.querySelectorAll('tbody tr').forEach(r => {
-      r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
-    });
-  };
-
-  // Show buttons if there's content
-  if (outArea.innerHTML.trim() !== '') {
-      copyBtn.style.display = 'inline-block';
-      pdfBtn.style.display = 'inline-block';
-      mdBtn.style.display = 'inline-block';
-      txtBtn.style.display = 'inline-block';
+  initFilter(tableFilter);
+  if (outArea.innerHTML.trim() !== "") {
+    toggleExportButtons([copyBtn, pdfBtn, mdBtn, txtBtn], true);
   }
-
-  copyBtn.onclick = () => navigator.clipboard.writeText(generatePlain());
-  pdfBtn.onclick = generatePdf; // Use dedicated function for better options
-  mdBtn.onclick  = () => download('spec.md', generateMarkdown());
-  txtBtn.onclick = () => download('spec.txt', generatePlain());
+  setupExportButtons({ copyBtn, pdfBtn, mdBtn, txtBtn }, {
+    generatePdf,
+    generateMarkdown,
+    generatePlain,
+    download,
+  });
 }
 
-// --- Export Functions ---
-function generatePdf() {
-    progress.textContent = 'Generating PDF...';
-    const element = outArea; // Select the output area
-    const opt = {
-      margin:       0.5, // Inches
-      filename:     `${blueprint?.name || 'blueprint'}_spec.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true }, // Increase scale for better resolution
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' } // Landscape more likely needed
-    };
-    html2pdf().from(element).set(opt).save().then(() => {
-         progress.textContent = 'PDF generated.';
-    }).catch(err => {
-        progress.textContent = 'PDF generation failed.';
-        showError(valErr, `PDF Error: ${err}`);
-    });
-}
 
-function generateMarkdown() {
-    let md = `# Blueprint Specification: ${blueprint?.name || 'Untitled'}\n\n`;
-    const meta = META_FIELDS.reduce((acc, id) => { acc[id] = document.getElementById(id).value; return acc; }, {});
-    if (meta.preparedBy) md += `**Prepared By:** ${meta.preparedBy}\n`;
-    if (meta.recipient) md += `**Recipient:** ${meta.recipient}\n`;
-    if (meta.version) md += `**Version:** ${meta.version}\n`;
-    if (meta.objective) md += `**Objective:** ${meta.objective}\n`;
-    md += "\n";
-
-    const toggles = TOGGLE_FIELDS.reduce((acc, id) => { acc[id] = document.getElementById(id).checked; return acc; }, {});
-
-    if (toggles.showScenario && blueprint?.metadata?.scenario) {
-        md += "## Scenario Details\n";
-        const s = blueprint.metadata.scenario;
-        md += `- **Type:** ${blueprint.metadata.instant ? 'Instant (Webhook)' : 'Scheduled / On Demand'}\n`;
-        md += `- **Sequential:** ${s.sequential ? 'Yes' : 'No'}\n`;
-        // Add other scenario details similarly...
-        md += "\n";
-    }
-
-    if (toggles.showConnections && blueprint?.connections?.length > 0) {
-        md += "## Connections Used\n";
-        blueprint.connections.forEach(c => {
-            md += `- **${c.name || 'Unnamed'}** (Type: ${c.type || '?'}, ID: ${c.id || '?'})\n`;
-        });
-        md += "\n";
-    }
-
-    if (toggles.showVars && blueprint?.variables?.length > 0) {
-        md += "## Variables Defined\n";
-         blueprint.variables.forEach(v => {
-            md += `- **${v.name || 'Unnamed'}** (Type: ${v.type || '?'})\n`; // Don't show value
-        });
-        md += "\n";
-    }
-
-    if (toggles.showModuleDetails && processedModules.length > 0) {
-         md += "## Module Details\n\n";
-         // Header row
-         md += "| ID | Path / Module | Label | Connection |";
-         if (toggles.showFilters) md += " Filter |";
-         md += " Error Handler |\n";
-         // Separator row
-         md += "|---|---|---|---|";
-         if (toggles.showFilters) md += "---|";
-         md += "---|\n";
-
-         // Data rows
-         processedModules.forEach(m => {
-             let pathDisplay = m.path.replace(/ > $/, '').replace(/\[Router (\d+)\]/g, 'R$1').replace(/\[Error Handler for (\d+)\]/g, 'Err$1');
-             let moduleDesc = `${pathDisplay ? pathDisplay + ' → ' : ''} **${m.app}:${m.action}**`;
-             let connectionDesc = m.connectionLabel !== 'N/A' ? `${m.connectionLabel} (${m.connectionType})` : '*None*';
-             let filterDesc = '*None*';
-             if (toggles.showFilters && m.filterConditions) {
-                  filterDesc = `${m.filterName ? `*${m.filterName}*:<br/>` : ''}\`\`\`json\n${formatJson(m.filterConditions)}\n\`\`\``;
-                  filterDesc = filterDesc.replace(/\|/g, '\\|'); // Escape pipes for markdown table
-             }
-             let errorDesc = m.errorHandler !== 'None' ? m.errorHandler : '*None*';
-
-             md += `| ${m.id} | ${moduleDesc} | ${m.label || ''} | ${connectionDesc} |`;
-             if (toggles.showFilters) md += ` ${filterDesc} |`;
-             md += ` ${errorDesc} |\n`;
-         });
-    }
-
-  return md;
-}
-
-function generatePlain() {
-   let txt = `Blueprint Specification: ${blueprint?.name || 'Untitled'}\n`;
-   txt += "===============================================\n";
-   const meta = META_FIELDS.reduce((acc, id) => { acc[id] = document.getElementById(id).value; return acc; }, {});
-   if (meta.preparedBy) txt += `Prepared By: ${meta.preparedBy}\n`;
-   if (meta.recipient) txt += `Recipient: ${meta.recipient}\n`;
-   if (meta.version) txt += `Version: ${meta.version}\n`;
-   if (meta.objective) txt += `Objective: ${meta.objective}\n`;
-   txt += "\n";
-
-   const toggles = TOGGLE_FIELDS.reduce((acc, id) => { acc[id] = document.getElementById(id).checked; return acc; }, {});
-
-    if (toggles.showScenario && blueprint?.metadata?.scenario) {
-        txt += "## Scenario Details\n";
-        const s = blueprint.metadata.scenario;
-        txt += `- Type: ${blueprint.metadata.instant ? 'Instant (Webhook)' : 'Scheduled / On Demand'}\n`;
-        txt += `- Sequential: ${s.sequential ? 'Yes' : 'No'}\n`;
-        // Add other scenario details similarly...
-        txt += "\n";
-    }
-
-    if (toggles.showConnections && blueprint?.connections?.length > 0) {
-        txt += "## Connections Used\n";
-        blueprint.connections.forEach(c => {
-            txt += `- ${c.name || 'Unnamed'} (Type: ${c.type || '?'}, ID: ${c.id || '?'})\n`;
-        });
-        txt += "\n";
-    }
-
-    if (toggles.showVars && blueprint?.variables?.length > 0) {
-        txt += "## Variables Defined\n";
-         blueprint.variables.forEach(v => {
-            txt += `- ${v.name || 'Unnamed'} (Type: ${v.type || '?'})\n`;
-        });
-        txt += "\n";
-    }
-
-    if (toggles.showModuleDetails && processedModules.length > 0) {
-         txt += "## Module Details\n";
-         processedModules.forEach(m => {
-             let indent = '  '.repeat(m.level);
-            let pathDisplay = m.path.replace(/ > $/, '').replace(/\[Router (\d+)\]/g, 'R$1').replace(/\[Error Handler for (\d+)\]/g, 'Err$1');
-            txt += `${indent}[${m.id}] ${pathDisplay ? pathDisplay + ' -> ' : ''}${m.app}:${m.action}`;
-             if (m.label) txt += ` (${m.label})`;
-             txt += `\n`;
-             if (m.connectionLabel !== 'N/A') txt += `${indent}  Connection: ${m.connectionLabel} (${m.connectionType})\n`;
-             if (toggles.showFilters && m.filterConditions) {
-                  txt += `${indent}  Filter: ${m.filterName || 'Unnamed'}\n${indent}    ${formatJson(m.filterConditions)}\n`;
-             }
-             if (m.errorHandler !== 'None') txt += `${indent}  Error Handler: ${m.errorHandler}\n`;
-             txt += "\n"; // Add space between modules
-         });
-    }
-  return txt;
-}
-
-function download(filename, content) {
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' }); // Ensure UTF-8
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a); // Required for Firefox
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
 
 // --- Initial Load ---
-// Try to validate if there's content on load (e.g., from browser cache)
 if (editor.getValue().trim()) {
     tryValidate();
 }
