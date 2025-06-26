@@ -1,6 +1,3 @@
-
-const { sanitizeForHTML, formatJson } = require('../src/scripts/worker');
-
 describe('sanitizeForHTML', () => {
   test('escapes HTML characters', () => {
     expect(sanitizeForHTML("<div>&\"'")).toBe('&lt;div&gt;&amp;&quot;&#039;');

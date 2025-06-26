@@ -1,3 +1,4 @@
+<<<<<<< codex/fix-duplicate-formatjson-declaration
 let sanitizeForHTML;
 let formatJson;
 
@@ -23,6 +24,30 @@ if (typeof module !== 'undefined' && module.exports) {
             return '[Could not format JSON]';
         }
     };
+=======
+let sanitizeForHTML, formatJson;
+
+if (typeof module !== 'undefined' && module.exports) {
+  ({ sanitizeForHTML, formatJson } = require('./utils'));
+} else {
+  sanitizeForHTML = str => {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  };
+
+  formatJson = data => {
+    try {
+      return JSON.stringify(data, null, 2);
+    } catch (_) {
+      return '[Could not format JSON]';
+    }
+  };
+>>>>>>> master
 }
 
 if (typeof self !== 'undefined') {
@@ -150,9 +175,8 @@ self.onmessage = e => {
 
           // Recurse for Routers
           if (mod.routes && mod.routes.length > 0) {
-              mod.routes.forEach((route, routeIndex) => {
-                  const routeFilter = getFilterDetails(route); // Filter might be on the route itself
-                  const routePath = `${pathPrefix}[Router ${mod.id}] Path ${routeIndex + 1}`;
+            mod.routes.forEach((route, routeIndex) => {
+                const routePath = `${pathPrefix}[Router ${mod.id}] Path ${routeIndex + 1}`;
                   // Add a pseudo-module entry for the path itself? Maybe not, keep it clean.
                   // Process modules within this route's flow
                   processModules(route.flow, routePath + ' > ', level + 1);
