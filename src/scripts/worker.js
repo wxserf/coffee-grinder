@@ -146,9 +146,8 @@ self.onmessage = e => {
 
           // Recurse for Routers
           if (mod.routes && mod.routes.length > 0) {
-              mod.routes.forEach((route, routeIndex) => {
-                  const routeFilter = getFilterDetails(route); // Filter might be on the route itself
-                  const routePath = `${pathPrefix}[Router ${mod.id}] Path ${routeIndex + 1}`;
+            mod.routes.forEach((route, routeIndex) => {
+                const routePath = `${pathPrefix}[Router ${mod.id}] Path ${routeIndex + 1}`;
                   // Add a pseudo-module entry for the path itself? Maybe not, keep it clean.
                   // Process modules within this route's flow
                   processModules(route.flow, routePath + ' > ', level + 1);
