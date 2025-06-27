@@ -40,8 +40,8 @@ let output = htmlContent.replace(
 // Inline main.js and provide worker code variable for offline build
 const workerVar = `const WORKER_CODE = \`${workerJsContent.replace(/`/g, '\\`')}\`;`;
 output = output.replace(
-  /<script src="scripts\/main.js"><\/script>/,
-  `<script>\n${workerVar}\n${mainJsContent}\n<\/script>`
+  /<script type="module" src="scripts\/main.js"><\/script>/,
+  `<script type="module">\n${workerVar}\n${mainJsContent}\n<\/script>`
 );
 
 fs.writeFileSync(outputFile, output, 'utf-8');
