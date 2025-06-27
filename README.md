@@ -61,7 +61,11 @@ Build artifacts are generated in `dist/`:
    ```
 
 ### Running Tests
-Execute the unit tests with:
+Before running tests, install dependencies with:
+```bash
+npm ci
+```
+Then execute the unit tests with:
 ```bash
 npm test
 ```
