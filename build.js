@@ -12,7 +12,7 @@ if (!fs.existsSync(distDir)) {
 const htmlPath = path.join(srcDir, 'index.html');
 const cssPath = path.join(srcDir, 'styles', 'main.css');
 const mainJsPath = path.join(srcDir, 'scripts', 'main.js');
-const workerJsPath = path.join(srcDir, 'scripts', 'worker.js');
+const workerJsPath = path.join(srcDir, 'workers', 'specWorker.js');
 
 const htmlContent = fs.readFileSync(htmlPath, 'utf-8');
 const cssContent = fs.readFileSync(cssPath, 'utf-8');
@@ -21,7 +21,7 @@ const workerJsContent = fs.readFileSync(workerJsPath, 'utf-8');
 
 // Detect if the developer version already inlines the worker using a Blob
 const blobWorkerRegex = /new\s+Worker\(\s*URL\.createObjectURL\(\s*new\s+Blob/;
-const externalWorkerRegex = /const\s+specWorker\s*=\s*new\s+Worker\(['"]scripts\/worker\.js['"]\);/;
+const externalWorkerRegex = /const\s+specWorker\s*=\s*new\s+Worker\(['"]workers\/specWorker\.js['"]\);/;
 
 if (!blobWorkerRegex.test(mainJsContent) && externalWorkerRegex.test(mainJsContent)) {
   const workerBlobCode = `

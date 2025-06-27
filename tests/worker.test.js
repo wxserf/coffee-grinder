@@ -1,4 +1,4 @@
-const { sanitizeForHTML, formatJson } = require('../src/scripts/worker');
+const { sanitizeForHTML, formatJson, processBlueprint } = require('../src/workers/specWorker');
 
 describe('sanitizeForHTML', () => {
   test('escapes HTML characters', () => {
@@ -20,5 +20,15 @@ describe('formatJson (worker)', () => {
     const a = {};
     a.self = a;
     expect(formatJson(a)).toBe('[Could not format JSON]');
+  });
+});
+
+describe('processBlueprint', () => {
+  test('returns result object with expected fields', () => {
+    const bp = { name: 'BP', flow: [] };
+    const result = processBlueprint(bp, {});
+    expect(result).toHaveProperty('html');
+    expect(result).toHaveProperty('warnings');
+    expect(result).toHaveProperty('processedModules');
   });
 });

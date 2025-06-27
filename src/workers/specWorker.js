@@ -1,7 +1,7 @@
 let sanitizeForHTML, formatJson;
 
 if (typeof module !== 'undefined' && module.exports) {
-  ({ sanitizeForHTML, formatJson } = require('./utils'));
+  ({ sanitizeForHTML, formatJson } = require('../scripts/utils'));
 } else {
   sanitizeForHTML = str => {
     if (!str) return '';
@@ -22,13 +22,11 @@ if (typeof module !== 'undefined' && module.exports) {
   };
 }
 
-if (typeof self !== 'undefined') {
-self.onmessage = e => {
-  const { blueprint, toggles } = e.data;
+function processBlueprint(blueprint, toggles = {}) {
   let processedModules = [];
   let warnings = [];
 
-  function findConnectionDetails(connId, blueprint) {
+  function findConnectionDetails(connId) {
       if (!blueprint.connections || !connId) return { type: 'N/A', label: 'N/A (No ID)' };
       const conn = blueprint.connections.find(c => c.id === connId);
       return conn ? { type: conn.type || '?', label: conn.name || '?' } : { type: '?', label: `Not Found (ID: ${connId})` };
@@ -39,7 +37,7 @@ self.onmessage = e => {
       return moduleData.label || (moduleData.metadata && moduleData.metadata.label) || '';
   }
 
-   function getConnectionInfo(moduleData, blueprint) {
+   function getConnectionInfo(moduleData) {
       let connLabel = 'N/A';
       let connType = 'N/A';
       let connId = null;
@@ -261,10 +259,16 @@ self.onmessage = e => {
        html += '<div class="panel"><h3>Module Details</h3><p><em>No modules found or processed in the blueprint flow.</em></p></div>';
   }
 
-  postMessage({ html: html, warnings: warnings, processedModules: processedModules });
+  return { html: html, warnings: warnings, processedModules: processedModules };
 }
+
+if (typeof self !== 'undefined') {
+  self.onmessage = e => {
+    const { blueprint, toggles } = e.data;
+    postMessage(processBlueprint(blueprint, toggles));
+  };
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { sanitizeForHTML, formatJson };
+  module.exports = { sanitizeForHTML, formatJson, processBlueprint };
 }

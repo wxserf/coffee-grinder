@@ -7,7 +7,7 @@ Erin's Coffee Grinder is a web-based blueprint analyzer that processes automatio
 - `src/index.html`: Main HTML file referencing external CSS and JS.
 - `src/styles/main.css`: Stylesheet extracted from original single-file app.
 - `src/scripts/main.js`: Main JavaScript logic for UI and blueprint processing.
-- `src/scripts/worker.js`: Web worker script for blueprint processing.
+- `src/workers/specWorker.js`: Web worker script for blueprint processing.
 - `.gitignore`: Specifies files and folders to ignore in Git.
 
 ## Getting Started
