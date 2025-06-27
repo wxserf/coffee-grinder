@@ -17,7 +17,7 @@ export default [
     plugins: [resolve(), commonjs()]
   },
   {
-    input: 'src/scripts/worker.js',
+    input: 'src/workers/specWorker.js',
     output: {
       file: 'dist/worker.bundle.js',
       format: 'iife',

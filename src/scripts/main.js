@@ -161,7 +161,7 @@ function initWorker() {
     if (typeof WORKER_CODE !== 'undefined') {
         codePromise = Promise.resolve(WORKER_CODE);
     } else {
-        codePromise = fetch('scripts/worker.js').then(r => r.text());
+        codePromise = fetch('workers/specWorker.js').then(r => r.text());
     }
 
     return codePromise
