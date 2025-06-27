@@ -5,6 +5,4 @@ coverage/
 logs/
 *.log
 .env
-coverage/
-logs/
 .nyc_output/
