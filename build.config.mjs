@@ -4,6 +4,18 @@
 
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import alias from '@rollup/plugin-alias';
+
+const pathAliases = alias({
+  entries: [
+    { find: '@components', replacement: 'src/components' },
+    { find: '@services', replacement: 'src/services' },
+    { find: '@workers', replacement: 'src/workers' },
+    { find: '@validators', replacement: 'src/validators' },
+    { find: '@utils', replacement: 'src/utils' },
+    { find: '@templates', replacement: 'src/templates' }
+  ]
+});
 
 export default [
   {
@@ -14,7 +26,7 @@ export default [
       name: 'CoffeeGrinderApp',
       sourcemap: true,
     },
-    plugins: [resolve(), commonjs()]
+    plugins: [pathAliases, resolve(), commonjs()]
   },
   {
     input: 'src/workers/specWorker.js',
@@ -24,6 +36,6 @@ export default [
       name: 'CoffeeGrinderWorker',
       sourcemap: true,
     },
-    plugins: [resolve(), commonjs()]
+    plugins: [pathAliases, resolve(), commonjs()]
   }
 ];
