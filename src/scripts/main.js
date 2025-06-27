@@ -1,6 +1,6 @@
-import { showError, showWarning, clearError, clearAllErrors } from '../components/ui/modals.js';
-import { activateExportButtons, generatePdf, download } from '../components/ui/buttons.js';
-import { setupTableFilter, makeSortable } from '../components/ui/tables.js';
+import { showError, showWarning, clearError, clearAllErrors } from '@components/ui/modals.js';
+import { activateExportButtons, generatePdf, download } from '@components/ui/buttons.js';
+import { setupTableFilter, makeSortable } from '@components/ui/tables.js';
 // --- Config & Initialization ---
 const META_FIELDS = ['preparedBy', 'recipient', 'version', 'objective'];
 const TOGGLE_FIELDS = ['showScenario', 'showConnections', 'showVars', 'showFilters', 'showModuleDetails'];
