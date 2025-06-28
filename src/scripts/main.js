@@ -299,15 +299,15 @@ function generateMarkdown() {
 
          // Data rows
          processedModules.forEach(m => {
-             let pathDisplay = m.path.replace(/ > $/, '').replace(/\[Router (\d+)\]/g, 'R$1').replace(/\[Error Handler for (\d+)\]/g, 'Err$1');
-             let moduleDesc = `${pathDisplay ? pathDisplay + ' → ' : ''} **${m.app}:${m.action}**`;
-             let connectionDesc = m.connectionLabel !== 'N/A' ? `${m.connectionLabel} (${m.connectionType})` : '*None*';
+             const pathDisplay = m.path.replace(/ > $/, '').replace(/\[Router (\d+)\]/g, 'R$1').replace(/\[Error Handler for (\d+)\]/g, 'Err$1');
+             const moduleDesc = `${pathDisplay ? pathDisplay + ' → ' : ''} **${m.app}:${m.action}**`;
+             const connectionDesc = m.connectionLabel !== 'N/A' ? `${m.connectionLabel} (${m.connectionType})` : '*None*';
              let filterDesc = '*None*';
              if (toggles.showFilters && m.filterConditions) {
                   filterDesc = `${m.filterName ? `*${m.filterName}*:<br/>` : ''}\`\`\`json\n${formatJson(m.filterConditions)}\n\`\`\``;
                   filterDesc = filterDesc.replace(/\|/g, '\\|'); // Escape pipes for markdown table
              }
-             let errorDesc = m.errorHandler !== 'None' ? m.errorHandler : '*None*';
+             const errorDesc = m.errorHandler !== 'None' ? m.errorHandler : '*None*';
 
              md += `| ${m.id} | ${moduleDesc} | ${m.label || ''} | ${connectionDesc} |`;
              if (toggles.showFilters) md += ` ${filterDesc} |`;
@@ -358,8 +358,8 @@ function generatePlain() {
     if (toggles.showModuleDetails && processedModules.length > 0) {
          txt += "## Module Details\n";
          processedModules.forEach(m => {
-             let indent = '  '.repeat(m.level);
-            let pathDisplay = m.path.replace(/ > $/, '').replace(/\[Router (\d+)\]/g, 'R$1').replace(/\[Error Handler for (\d+)\]/g, 'Err$1');
+             const indent = '  '.repeat(m.level);
+            const pathDisplay = m.path.replace(/ > $/, '').replace(/\[Router (\d+)\]/g, 'R$1').replace(/\[Error Handler for (\d+)\]/g, 'Err$1');
             txt += `${indent}[${m.id}] ${pathDisplay ? pathDisplay + ' -> ' : ''}${m.app}:${m.action}`;
              if (m.label) txt += ` (${m.label})`;
              txt += `\n`;

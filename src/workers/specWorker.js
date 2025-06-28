@@ -23,8 +23,8 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 
 function processBlueprint(blueprint, toggles = {}) {
-  let processedModules = [];
-  let warnings = [];
+  const processedModules = [];
+  const warnings = [];
 
   function findConnectionDetails(connId) {
       if (!blueprint.connections || !connId) return { type: 'N/A', label: 'N/A (No ID)' };

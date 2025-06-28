@@ -7,7 +7,8 @@ describe('build script', () => {
   const output = path.join(dist, 'coffee-grinder.html');
 
   afterAll(() => {
-    if (fs.existsSync(output)) fs.unlinkSync(output);
+    if (fs.existsSync(dist)) fs.rmSync(dist, { recursive: true, force: true });
+
     if (fs.existsSync(dist)) fs.rmdirSync(dist);
   });
 

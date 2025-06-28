@@ -31,7 +31,7 @@ describe('generateMarkdown', () => {
     expect(md).toContain('# Blueprint Specification: Test BP');
     expect(md).toContain('**Prepared By:** Me');
     expect(md).toContain('## Scenario Details');
-    expect(md).toContain('HTTP (Type: http, ID: 1)');
+    expect(md).toContain('**HTTP** (Type: http, ID: 1)');
     expect(md).toContain('| 1 |');
   });
 });
