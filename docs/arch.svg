@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" font-family="monospace" font-size="14">
+  <text x="10" y="20">src/</text>
+  <text x="30" y="40">components/</text>
+  <text x="50" y="60">ui/</text>
+  <text x="30" y="80">services/</text>
+  <text x="30" y="100">workers/</text>
+  <text x="30" y="120">validators/</text>
+  <text x="30" y="140">utils/</text>
+  <text x="30" y="160">templates/</text>
+  <text x="10" y="180">tests/</text>
+</svg>

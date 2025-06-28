@@ -10,6 +10,9 @@ Erin's Coffee Grinder is a web-based blueprint analyzer that processes automatio
 - `src/workers/specWorker.js`: Web worker script for blueprint processing.
 - `.gitignore`: Specifies files and folders to ignore in Git.
 
+### Architecture Diagram
+For a quick overview of the folder layout, see [docs/arch.svg](docs/arch.svg).
+
 ## Getting Started
 
 ### Prerequisites
