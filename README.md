@@ -74,7 +74,22 @@ npm test
 ```
 
 ## Make.com Integration
-The new `makeApiClient` module offers helper functions to deploy scenarios to the Make API. Use `deployScenario(token, blueprint)` to push a blueprint using an OAuth access token.
+The new `makeApiClient` module offers helper functions to deploy scenarios to the Make API. It relies on the global `fetch` API available in **Node.js 18 or newer**.
+
+Before running the tests for this module, make sure to install dependencies with:
+```bash
+npm install
+```
+
+Example usage:
+```javascript
+const { deployScenario } = require('./src/services/makeApiClient');
+
+const blueprint = { name: 'My Flow', flow: [] };
+
+deployScenario(process.env.MAKE_TOKEN, blueprint)
+  .then(res => console.log('Scenario deployed:', res.id));
+```
 
 ## Contributing
 Contributions are welcome! Fork the repository and create a feature branch
