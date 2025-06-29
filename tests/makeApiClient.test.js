@@ -1,12 +1,16 @@
 const { request, deployScenario } = require('../src/services/makeApiClient');
 
+let originalFetch;
+
 // Mock global fetch
 beforeEach(() => {
+  originalFetch = global.fetch;
   global.fetch = jest.fn();
 });
 
 afterEach(() => {
   jest.clearAllMocks();
+  global.fetch = originalFetch;
 });
 
 test('request retries on failure then succeeds', async () => {
