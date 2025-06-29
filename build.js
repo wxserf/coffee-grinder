@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const logger = require('./src/utils/logger');
 
 const srcDir = path.join(__dirname, 'src');
 const distDir = path.join(__dirname, 'dist');
@@ -46,4 +47,5 @@ output = output.replace(
 
 fs.writeFileSync(outputFile, output, 'utf-8');
 
-console.log('Build complete: ' + outputFile);
+logger.info('Build complete', { file: outputFile });
+
