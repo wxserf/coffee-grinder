@@ -73,6 +73,9 @@ Then execute the unit tests with:
 npm test
 ```
 
+## Make.com Integration
+The new `makeApiClient` module offers helper functions to deploy scenarios to the Make API. Use `deployScenario(token, blueprint)` to push a blueprint using an OAuth access token.
+
 ## Contributing
 Contributions are welcome! Fork the repository and create a feature branch
 from `main`. When you're ready, open a pull request. See
