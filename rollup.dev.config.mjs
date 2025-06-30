@@ -1,5 +1,6 @@
 /**
- * Simple Rollup config for bundling main.js and worker.js with dependencies for browser usage.
+ * Rollup configuration for development builds.
+ * Includes source maps for easier debugging.
  */
 
 import resolve from '@rollup/plugin-node-resolve';

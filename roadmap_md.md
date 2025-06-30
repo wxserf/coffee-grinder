@@ -60,9 +60,9 @@ The checklist is grouped by project phase so you can work from the ground up: cl
 | 1.3.1.a | Upgrade Rollup and set `treeshake.moduleSideEffects=false` in the config. | Bundle size drops by ~5%. | 1.1.* | ⬜ |
 | 1.3.1.b | Split the vendor libraries (ajv, html2pdf) and the worker into separate chunks. | `dist/vendor.js` and `dist/worker.bundle.js` created. | 1.3.1.a | ⬜ |
 | 1.3.1.c | Add `rollup-plugin-analyzer`; save its HTML output to `docs/bundleReport.html`. | Report exists. | 1.3.1.a | ⬜ |
-| 1.3.2.a | Load heavy libraries from a CDN in production; keep local copies in development. | `index.html` switches based on `NODE_ENV`. | 1.3.1.* | ⬜ |
-| 1.3.2.b | Add a `vite-preview` script for a lightweight dev server. | `npm run preview` serves the app. | 1.3.1.* | ⬜ |
-| 1.3.3.a | Make separate Rollup configs for dev and prod; turn off source maps in prod. | Two config files documented. | 1.3.1.a | ⬜ |
+| 1.3.2.a | Load heavy libraries from a CDN in production; keep local copies in development. | `index.html` switches based on `NODE_ENV`. | 1.3.1.* | ✅ |
+| 1.3.2.b | Add a `vite-preview` script for a lightweight dev server. | `npm run preview` serves the app. | 1.3.1.* | ✅ |
+| 1.3.3.a | Make separate Rollup configs for dev and prod; turn off source maps in prod. | Two config files documented. | 1.3.1.a | ✅ |
 | 1.3.3.b | Enable Terser minification in prod; make sure it does not break the worker. | Build works; smoke test passes. | 1.3.3.a | ⬜ |
 | 1.3.4.a | Write a release script that bumps the version, builds, and creates a GitHub release with the bundle. | `scripts/release.js` works. | 1.3.3.* | ⬜ |
 

@@ -39,6 +39,11 @@ npm run dev
 
 Then open your browser at `http://localhost:8080`.
 
+For a lightweight preview of the production build you can run:
+```bash
+npm run preview
+```
+
 ### Development
 - Edit source files in `src/`.
 - The app will load the modularized CSS and JS files.
@@ -46,21 +51,25 @@ Then open your browser at `http://localhost:8080`.
    ```bash
    npm run dev
    ```
+ - Heavy vendor libraries are loaded locally in development and from a CDN when `NODE_ENV=production`.
 
 ### Building for Distribution
 Build artifacts are generated in `dist/`:
 
 1. Bundle scripts with Rollup:
    ```bash
-   npm run build
+   npm run build       # production (no source maps)
+   npm run build:dev   # includes source maps
    ```
+   The configs are in `rollup.prod.config.mjs` and `rollup.dev.config.mjs`.
 2. Inline assets and create `dist/coffee-grinder.html`:
    ```bash
    node build.js
    ```
 3. Preview the built file:
    ```bash
-   npm run serve
+   npm run serve          # simple static server
+   npm run preview        # vite preview server
    ```
 
 ### Running Tests

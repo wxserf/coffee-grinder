@@ -6,12 +6,37 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; worker-src blob:"/>
   <title>Erin's Coffee Grinder v7.0 - Enhanced</title>
   <link rel="stylesheet" href="styles/main.css"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css"/>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ajv/8.12.0/ajv7.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/sorttable/2.1.0/sorttable.min.js"></script>
+  <script>
+    const env = window.NODE_ENV || 'development';
+    const head = document.head;
+    const addCss = href => {
+      const l = document.createElement('link');
+      l.rel = 'stylesheet';
+      l.href = href;
+      head.appendChild(l);
+    };
+    const addJs = src => {
+      const s = document.createElement('script');
+      s.src = src;
+      head.appendChild(s);
+    };
+    if (env === 'production') {
+      const cdn = 'https://cdnjs.cloudflare.com/ajax/libs';
+      addCss(`${cdn}/codemirror/5.65.5/codemirror.min.css`);
+      addJs(`${cdn}/codemirror/5.65.5/codemirror.min.js`);
+      addJs(`${cdn}/codemirror/5.65.5/mode/javascript/javascript.min.js`);
+      addJs(`${cdn}/ajv/8.12.0/ajv7.min.js`);
+      addJs(`${cdn}/html2pdf.js/0.10.1/html2pdf.bundle.min.js`);
+      addJs(`${cdn}/sorttable/2.1.0/sorttable.min.js`);
+    } else {
+      addCss('vendor/codemirror.css');
+      addJs('vendor/codemirror.js');
+      addJs('vendor/javascript.js');
+      addJs('vendor/ajv7.min.js');
+      addJs('vendor/html2pdf.bundle.min.js');
+      addJs('vendor/sorttable.min.js');
+    }
+  </script>
 </head>
 <body>
   <div class="container">
