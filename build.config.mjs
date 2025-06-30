@@ -5,6 +5,7 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import alias from '@rollup/plugin-alias';
+import analyze from 'rollup-plugin-analyzer';
 
 const pathAliases = alias({
   entries: [
@@ -19,6 +20,16 @@ const pathAliases = alias({
 
 export default [
   {
+    input: 'src/scripts/vendor.js',
+    output: {
+      file: 'dist/vendor.js',
+      format: 'iife',
+      name: 'VendorLibs'
+    },
+    plugins: [resolve(), commonjs()],
+    treeshake: { moduleSideEffects: false }
+  },
+  {
     input: 'src/scripts/main.js',
     output: {
       file: 'dist/bundle.js',
@@ -26,7 +37,8 @@ export default [
       name: 'CoffeeGrinderApp',
       sourcemap: true,
     },
-    plugins: [pathAliases, resolve(), commonjs()]
+    plugins: [pathAliases, resolve(), commonjs(), analyze({ summaryOnly: true, html: 'docs/bundleReport.html' })],
+    treeshake: { moduleSideEffects: false }
   },
   {
     input: 'src/workers/specWorker.js',
@@ -36,6 +48,7 @@ export default [
       name: 'CoffeeGrinderWorker',
       sourcemap: true,
     },
-    plugins: [pathAliases, resolve(), commonjs()]
+    plugins: [pathAliases, resolve(), commonjs()],
+    treeshake: { moduleSideEffects: false }
   }
 ];
