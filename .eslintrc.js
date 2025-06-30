@@ -5,7 +5,8 @@ module.exports = {
     node: true,
     jest: true
   },
-  extends: ['eslint:recommended'],
+  extends: ['eslint:recommended', 'plugin:sonarjs/recommended'],
+  plugins: ['sonarjs'],
   parserOptions: {
     ecmaVersion: 2021,
     sourceType: 'module'
