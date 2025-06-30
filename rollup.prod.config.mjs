@@ -20,6 +20,16 @@ const pathAliases = alias({
 
 export default [
   {
+    input: 'src/scripts/vendor.js',
+    output: {
+      file: 'dist/vendor.js',
+      format: 'iife',
+      name: 'VendorLibs'
+    },
+    plugins: [resolve(), commonjs()],
+    treeshake: { moduleSideEffects: false }
+  },
+  {
     input: 'src/scripts/main.js',
     output: {
       file: 'dist/bundle.js',
@@ -27,7 +37,8 @@ export default [
       name: 'CoffeeGrinderApp',
       sourcemap: false,
     },
-    plugins: [pathAliases, resolve(), commonjs()]
+    plugins: [pathAliases, resolve(), commonjs()],
+    treeshake: { moduleSideEffects: false }
   },
   {
     input: 'src/workers/specWorker.js',
@@ -37,6 +48,7 @@ export default [
       name: 'CoffeeGrinderWorker',
       sourcemap: false,
     },
-    plugins: [pathAliases, resolve(), commonjs()]
+    plugins: [pathAliases, resolve(), commonjs()],
+    treeshake: { moduleSideEffects: false }
   }
 ];
