@@ -52,6 +52,7 @@ npm run preview
    npm run dev
    ```
  - Heavy vendor libraries are loaded locally in development and from a CDN when `NODE_ENV=production`.
+   Run `NODE_ENV=production npm run preview` to test the production setup locally.
 
 ### Building for Distribution
 Build artifacts are generated in `dist/`:
