@@ -13,7 +13,16 @@ describe('blueprintImporter', () => {
   });
 
   test('throws when required fields missing', () => {
-    expect(() => importBlueprint('{"name":"bp"}')).toThrow('Data does not conform to basic schema');
+    expect(() => importBlueprint('{"name":"bp"}')).toThrow(/Data does not match schema/);
+  });
+
+  test('provides Ajv error details on validation failure', () => {
+    try {
+      importBlueprint('{"name":123,"flow":{}}');
+    } catch (err) {
+      expect(err.message).toMatch(/Data does not match schema/);
+      expect(Array.isArray(err.validationErrors)).toBe(true);
+    }
   });
 
   test('remaps connection ids when option provided', () => {
