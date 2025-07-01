@@ -384,3 +384,5 @@ if (editor.getValue().trim()) {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { sanitizeForHTML, formatJson };
 }
+
+console.log('main.js loaded');
