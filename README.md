@@ -24,6 +24,7 @@ After cloning the repository, install all dependencies:
 npm ci
 ```
 This installs dev tools such as **Jest** and **ESLint** required for testing and linting.
+The JSON schema validator **Ajv** is also installed automatically.
 
 ### Running Locally
 You can serve the `src` directory using a simple HTTP server or the provided npm script:
@@ -48,6 +49,7 @@ Then open your browser at `http://localhost:8080`.
 ### Development
 - Edit source files in `src/`.
 - The app will load the modularized CSS and JS files.
+- The project relies on **Ajv** for JSON schema validation; it is installed automatically when you run `npm install` or `npm ci`.
 - Start a local dev server with:
    ```bash
    npm run dev
