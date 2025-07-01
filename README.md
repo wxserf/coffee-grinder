@@ -50,7 +50,7 @@ Then open your browser at `http://localhost:8080`.
 ### Building for Distribution
 Build artifacts are generated in `dist/`:
 
-1. Bundle scripts with Rollup:
+1. Bundle scripts with Rollup (this command sets `NODE_ENV=production` so CDN scripts load correctly):
    ```bash
    npm run build
    ```
