@@ -64,6 +64,19 @@ const copyBtn = document.getElementById('copyBtn');
 const pdfBtn = document.getElementById('exportPdfBtn');
 const mdBtn = document.getElementById('exportMdBtn');
 const txtBtn = document.getElementById('exportTxtBtn');
+const workerStatus = document.getElementById('workerStatus');
+let lastHeartbeat = Date.now();
+
+function updateWorkerStatus(online) {
+  if (!workerStatus) return;
+  workerStatus.classList.toggle('online', online);
+  workerStatus.classList.toggle('offline', !online);
+  workerStatus.title = online ? 'Worker online' : 'Worker offline';
+}
+
+setInterval(() => {
+  if (Date.now() - lastHeartbeat > 15000) updateWorkerStatus(false);
+}, 5000);
 
 let blueprint = null;
 let processedModules = []; // Store the result of processing
@@ -170,6 +183,7 @@ function initWorker() {
             specWorker = new Worker(URL.createObjectURL(blob));
             specWorker.onmessage = handleWorkerMessage;
             specWorker.onerror = handleWorkerError;
+            updateWorkerStatus(false);
         })
         .catch(err => showError(valErr, 'Failed to load worker: ' + err));
 }
@@ -199,6 +213,11 @@ genBtn.addEventListener('click', () => {
 
 // Worker message handlers
 function handleWorkerMessage(e) {
+    if (e.data.type === 'heartbeat') {
+        lastHeartbeat = Date.now();
+        updateWorkerStatus(true);
+        return;
+    }
     const { html, warnings, processedModules: pm } = e.data;
     processedModules = pm; // Store processed data for export
 

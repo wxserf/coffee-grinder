@@ -47,7 +47,7 @@ The checklist is grouped by project phase so you can work from the ground up: co
 | 1.1.3.a | Run `madge --circular src/` and save results to `docs/circularDeps.txt`. | File created. | 1.1.1.* | ⬜ |
 | 1.1.3.b | Add `.dependency-cruiser.js` with rules that forbid backwards imports (e.g., utils must not depend on components). | CI breaks on violation. | 1.1.1.* | ⬜ |
 | 1.1.3.c | Use `depcheck` to remove unused packages and update `package.json` and the lockfile. | `npm i` prints no warnings. | — | ⬜ |
-| 1.1.3.d | Add `.vscode/extensions.json` recommending ESLint, Prettier, and JavaScript/TypeScript language server. | VSCode prompts to install. | — | ⬜ |
+| 1.1.3.d | Add `.vscode/extensions.json` recommending ESLint, Prettier, and JavaScript/TypeScript language server. | VSCode prompts to install. | — | ✅ |
 
 ### 1.2 Code Deduplication (High Priority) — ✅ MOSTLY COMPLETE
 
@@ -109,8 +109,8 @@ The checklist is grouped by project phase so you can work from the ground up: co
 | 2.3.1.b | Add Sentry breadcrumbs for: blueprint loaded, validation failure, worker error, and export actions. | Breadcrumbs appear in Sentry error reports. | 2.3.1.a | ⬜ |
 | 2.3.2.a | **[CRITICAL]** Create `src/utils/logger.js` with structured JSON logging (debug/info/warn/error levels). | Logger unit-tested and documented. | — | ⬜ |
 | 2.3.2.b | Replace all direct `console.*` calls with structured logger throughout codebase. | `grep -r "console\." src/` returns nothing. | 2.3.2.a | ⬜ |
-| 2.3.3.a | Add a `/health` endpoint template for future server deployment with basic status checks. | Health check template documented. | 2.3.2.a | ⬜ |
-| 2.3.3.b | Implement worker heartbeat: post message every 10s, show status indicator in UI. | Green/red dot shows worker health. | 1.1.1.c | ⬜ |
+| 2.3.3.a | Add a `/health` endpoint template for future server deployment with basic status checks. | Health check template documented. | 2.3.2.a | ✅ |
+| 2.3.3.b | Implement worker heartbeat: post message every 10s, show status indicator in UI. | Green/red dot shows worker health. | 1.1.1.c | ✅ |
 
 ---
 
@@ -190,7 +190,7 @@ The checklist is grouped by project phase so you can work from the ground up: co
 
 - Minification in production build (1.3.3.b)
 - Dependency audit and cleanup (1.1.3.c, 2.2.3.b)
-- Worker heartbeat indicator (2.3.3.b)
+- ~~Worker heartbeat indicator (2.3.3.b)~~
 - Development server improvements (1.3.2.b)
 
 ## Deferred Items (Post-Production)

@@ -267,6 +267,10 @@ if (typeof self !== 'undefined') {
     const { blueprint, toggles } = e.data;
     postMessage(processBlueprint(blueprint, toggles));
   };
+
+  setInterval(() => {
+    postMessage({ type: 'heartbeat' });
+  }, 10000);
 }
 
 if (typeof module !== 'undefined' && module.exports) {
