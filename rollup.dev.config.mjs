@@ -1,5 +1,4 @@
 /**
- * Rollup development config with source maps and env replacement.
  */
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
@@ -18,8 +17,6 @@ const pathAliases = alias({
   ]
 });
 
-const envReplace = replace({ preventAssignment: true, 'window.NODE_ENV': JSON.stringify(process.env.NODE_ENV) });
-
 export default [
   {
     input: 'src/scripts/vendor.js',
@@ -28,7 +25,6 @@ export default [
       format: 'iife',
       name: 'VendorLibs'
     },
-    plugins: [envReplace, resolve(), commonjs()],
     treeshake: { moduleSideEffects: false }
   },
   {
@@ -37,9 +33,6 @@ export default [
       file: 'dist/bundle.js',
       format: 'iife',
       name: 'CoffeeGrinderApp',
-      sourcemap: true,
-    },
-    plugins: [envReplace, pathAliases, resolve(), commonjs(), analyze({ summaryOnly: true, html: 'docs/bundleReport.html' })],
     treeshake: { moduleSideEffects: false }
   },
   {
@@ -48,9 +41,7 @@ export default [
       file: 'dist/worker.bundle.js',
       format: 'iife',
       name: 'CoffeeGrinderWorker',
-      sourcemap: true,
-    },
-    plugins: [envReplace, pathAliases, resolve(), commonjs()],
+
     treeshake: { moduleSideEffects: false }
   }
 ];
