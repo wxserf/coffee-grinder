@@ -1,5 +1,4 @@
 /**
- * Rollup configuration for development builds.
  */
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
@@ -26,11 +25,6 @@ export default [
       format: 'iife',
       name: 'VendorLibs'
     },
-    plugins: [
-      replace({ preventAssignment: true, 'window.NODE_ENV': JSON.stringify(process.env.NODE_ENV) }),
-      resolve(),
-      commonjs()
-    ],
     treeshake: { moduleSideEffects: false }
   },
   {
@@ -39,15 +33,6 @@ export default [
       file: 'dist/bundle.js',
       format: 'iife',
       name: 'CoffeeGrinderApp',
-      sourcemap: true
-    },
-    plugins: [
-      pathAliases,
-      replace({ preventAssignment: true, 'window.NODE_ENV': JSON.stringify(process.env.NODE_ENV) }),
-      resolve(),
-      commonjs(),
-      analyze({ summaryOnly: true, html: 'docs/bundleReport.html' })
-    ],
     treeshake: { moduleSideEffects: false }
   },
   {
@@ -56,14 +41,7 @@ export default [
       file: 'dist/worker.bundle.js',
       format: 'iife',
       name: 'CoffeeGrinderWorker',
-      sourcemap: true
-    },
-    plugins: [
-      pathAliases,
-      replace({ preventAssignment: true, 'window.NODE_ENV': JSON.stringify(process.env.NODE_ENV) }),
-      resolve(),
-      commonjs()
-    ],
+
     treeshake: { moduleSideEffects: false }
   }
 ];
