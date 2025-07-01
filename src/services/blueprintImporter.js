@@ -1,11 +1,8 @@
 const schema = require('../schemas/makeBlueprintSchema');
+const createValidator = require('../validators/baseValidator');
 
-function basicValidate(obj) {
-  if (!obj || typeof obj !== 'object') return false;
-  if (typeof obj.name !== 'string') return false;
-  if (!Array.isArray(obj.flow)) return false;
-  return true;
-}
+const ajv = createValidator();
+const validate = ajv.compile(schema);
 
 function importBlueprint(jsonStr, options = {}) {
   let data;
@@ -14,8 +11,12 @@ function importBlueprint(jsonStr, options = {}) {
   } catch (e) {
     throw new Error('Invalid JSON');
   }
-  if (!basicValidate(data)) {
-    throw new Error('Data does not conform to basic schema');
+  if (!validate(data)) {
+    const err = new Error(
+      'Data does not match schema: ' + ajv.errorsText(validate.errors)
+    );
+    err.validationErrors = validate.errors;
+    throw err;
   }
   if (options.remapConnections && typeof options.remapConnections === 'object') {
     const map = options.remapConnections;
