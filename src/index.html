@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; worker-src blob:"/>
   <title>Erin's Coffee Grinder v7.0 - Enhanced</title>
   <link rel="stylesheet" href="styles/main.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css"/>
@@ -71,6 +72,7 @@
 
   </div>
 
+  <script type="module" src="scripts/cspNonce.js"></script>
   <script type="module" src="scripts/main.js"></script>
 </body>
 </html>

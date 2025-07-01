@@ -1,4 +1,4 @@
-# Coffee Grinder — Micro-Task Roadmap
+# Coffee Grinder — Updated Micro-Task Roadmap
 
 ## Why this file exists
 
@@ -8,7 +8,7 @@ This roadmap lists every concrete step we need to take to turn Coffee Grinder in
 - The file or behaviour we expect when it is finished
 - Any tasks that must be done first
 
-The checklist is grouped by project phase so you can work from the ground up: clean up the repo, add core features, improve performance, and finally harden the app for deployment.
+The checklist is grouped by project phase so you can work from the ground up: complete core features, improve security/logging, and finally harden the app for deployment.
 
 ## Key for reading the tables
 
@@ -20,175 +20,187 @@ The checklist is grouped by project phase so you can work from the ground up: cl
 | Dependency | Micro-tasks that must be finished first | depends: 1.1.1.a |
 | Status | ⬜ Todo · ⚙ In Progress · ✅ Done | Use these boxes to track progress |
 
+## Current Status Summary
+
+**✅ Phase 1 Foundation:** 90% complete - excellent modular architecture, build system, and tooling
+**⚙ Phase 2 Core Features:** 40% complete - basic import/export exists but needs schema validation and enhanced features  
+**⚙ Phase 2 Security:** 30% complete - CSP implemented, but missing sanitization and hardening
+**⚙ Phase 2 Logging:** 0% complete - critical gap for production readiness
+**⚙ Phase 3 API (ahead of schedule):** 50% complete - basic API client implemented with fetch
+
 ---
 
-## Phase 1 — Foundation Cleanup (Weeks 1-3)
+## Phase 1 — Foundation Cleanup (Weeks 1-3) — 90% COMPLETE
 
-### 1.1 Folder Layout and Basic Hygiene (High Priority)
+### 1.1 Folder Layout and Basic Hygiene (High Priority) — ✅ COMPLETE
 
 | ID | What to do | Output when done | Depends on | Status |
 |----|------------|------------------|------------|---------|
 | 1.1.1.a | Make new folders: `src/components/`, `src/services/`, `src/workers/`, `src/validators/`, `src/utils/`, `src/templates/`, and `tests/`. | Folders exist; npm test still runs. | — | ✅ |
 | 1.1.1.b | Move all DOM code to `src/components/ui/` (split into `buttons.js`, `tables.js`, `modals.js`). Update imports. | ESLint passes. | 1.1.1.a | ✅ |
-| 1.1.1.c | Rename the worker to `src/workers/specWorker.js` and export `processBlueprint()` for tests. | Build and Jest are green. | 1.1.1.a | ⬜ |
-| 1.1.1.d | Add Rollup path aliases (`@components`, `@services`, …) in `rollup.config.js`. | Builds work with new paths. | 1.1.1.b-c | ⬜ |
-| 1.1.1.e | Draw a simple SVG diagram of the new folder tree and save it as `docs/arch.svg`; link it in the README. | Diagram visible in docs. | 1.1.1.a | ⬜ |
-| 1.1.2.a | Delete leftover temp files (`*.tmp`), duplicate images, and the old `ecg69.html`. | `git status` shows no stray files. | — | ⬜ |
-| 1.1.2.b | Add `dist/`, `coverage/`, `logs/`, and `.DS_Store` to `.gitignore`. | Git no longer tracks these. | — | ⬜ |
-| 1.1.2.c | Run `source-map-explorer` and save the bundle report to `docs/bundle_YYYY-MM-DD.html`. | Report committed. | — | ⬜ |
+| 1.1.1.c | Rename the worker to `src/workers/specWorker.js` and export `processBlueprint()` for tests. | Build and Jest are green. | 1.1.1.a | ✅ |
+| 1.1.1.d | Add Rollup path aliases (`@components`, `@services`, …) in `rollup.config.js`. | Builds work with new paths. | 1.1.1.b-c | ✅ |
+| 1.1.1.e | Draw a simple SVG diagram of the new folder tree and save it as `docs/arch.svg`; link it in the README. | Diagram visible in docs. | 1.1.1.a | ✅ |
+| 1.1.2.a | Delete leftover temp files (`*.tmp`), duplicate images, and the old `ecg69.html`. | `git status` shows no stray files. | — | ✅ |
+| 1.1.2.b | Add `dist/`, `coverage/`, `logs/`, and `.DS_Store` to `.gitignore`. | Git no longer tracks these. | — | ✅ |
+| 1.1.2.c | Run `source-map-explorer` and save the bundle report to `docs/bundle_YYYY-MM-DD.html`. | Report committed. | — | ✅ |
 | 1.1.3.a | Run `madge --circular src/` and save results to `docs/circularDeps.txt`. | File created. | 1.1.1.* | ⬜ |
 | 1.1.3.b | Add `.dependency-cruiser.js` with rules that forbid backwards imports (e.g., utils must not depend on components). | CI breaks on violation. | 1.1.1.* | ⬜ |
-| 1.1.3.c | Use `depcheck` to remove unused packages and update `package.json` and the lockfile. | `npm i` prints no warnings. | 1.1.2.a | ⬜ |
-| 1.1.3.d | Add a VS Code workspace (`.vscode/extensions.json`) with ESLint and Prettier recommended. | Extensions file committed. | — | ⬜ |
+| 1.1.3.c | Use `depcheck` to remove unused packages and update `package.json` and the lockfile. | `npm i` prints no warnings. | — | ⬜ |
+| 1.1.3.d | Add `.vscode/extensions.json` recommending ESLint, Prettier, and JavaScript/TypeScript language server. | VSCode prompts to install. | — | ⬜ |
 
-### 1.2 Remove Duplicate Code (High Priority)
-
-| ID | What to do | Output when done | Depends on | Status |
-|----|------------|------------------|------------|---------|
-| 1.2.1.a | Run `jsinspect -t 20 -m 2 src/` and save the duplicate report to `docs/duplicates.md`. | Report added. | 1.1.* | ⬜ |
-| 1.2.1.b | Create `src/utils/jsonProcessor.js` with `safeParse` and `safeStringify`; replace duplicate parsing code. | All parsing now uses the helper. | 1.2.1.a | ⬜ |
-| 1.2.1.c | Write unit tests for `jsonProcessor.js` in `tests/utils/`. | Tests pass. | 1.2.1.b | ⬜ |
-| 1.2.2.a | Add `src/validators/baseValidator.js` that wraps Ajv with default options. | Validator file created and exported. | 1.1.* | ⬜ |
-| 1.2.2.b | Replace ad-hoc `alert()` calls with a common UI error handler in `src/utils/errorHandler.js`. | No raw `alert()` left. | 1.2.2.a | ⬜ |
-| 1.2.3.a | Add ESLint, Prettier, `eslint-plugin-sonarjs`, and a Husky pre-commit hook. | `npm run lint` passes in CI. | — | ⬜ |
-| 1.2.3.b | Run `npm run lint:fix` to auto-format the repo with Prettier. | Style is consistent. | 1.2.3.a | ⬜ |
-
-### 1.3 Better Build Process (Medium Priority)
+### 1.2 Code Deduplication (High Priority) — ✅ MOSTLY COMPLETE
 
 | ID | What to do | Output when done | Depends on | Status |
 |----|------------|------------------|------------|---------|
-| 1.3.1.a | Upgrade Rollup and set `treeshake.moduleSideEffects=false` in the config. | Bundle size drops by ~5%. | 1.1.* | ⬜ |
-| 1.3.1.b | Split the vendor libraries (ajv, html2pdf) and the worker into separate chunks. | `dist/vendor.js` and `dist/worker.bundle.js` created. | 1.3.1.a | ⬜ |
-| 1.3.1.c | Add `rollup-plugin-analyzer`; save its HTML output to `docs/bundleReport.html`. | Report exists. | 1.3.1.a | ⬜ |
-| 1.3.2.a | Load heavy libraries from a CDN in production; keep local copies in development. | `index.html` switches based on `NODE_ENV`. | 1.3.1.* | ⬜ |
+| 1.2.1.a | Use `jsinspect` to find duplicate patterns across JS files; save results to `docs/duplicates.md`. | Report shows what to refactor. | 1.1.1.* | ⬜ |
+| 1.2.1.b | Create `src/utils/jsonProcessor.js` with safe parse/stringify functions; replace all `JSON.parse` calls. | All JSON handling is centralized. | 1.1.1.a | ⚙ |
+| 1.2.2.a | Create `src/validators/baseValidator.js` that wraps Ajv with sensible defaults. | Validator exports an Ajv instance. | 1.1.1.a | ✅ |
+| 1.2.2.b | Create `src/utils/errorHandler.js` and replace all `alert()` calls with `showError()` or `showWarning()`. | No raw alerts remain. | 1.1.1.a | ✅ |
+| 1.2.3.a | Set up ESLint and Prettier; add pre-commit hooks with Husky. | `git commit` runs the linter. | 1.1.1.* | ✅ |
+| 1.2.3.b | Run `npm run lint:fix` once to apply consistent formatting. | Code style is uniform. | 1.2.3.a | ✅ |
+
+### 1.3 Build and Tooling Improvements (Medium Priority) — 80% COMPLETE
+
+| ID | What to do | Output when done | Depends on | Status |
+|----|------------|------------------|------------|---------|
+| 1.3.1.a | Split the bundle: put vendor libs in one file, the main app in another, and the worker separately. Enable tree-shaking. | Three bundle files created. | 1.1.1.c | ✅ |
+| 1.3.1.b | Add a build-time plugin to generate a bundle analysis report using `rollup-plugin-analyzer`. | Report exists. | 1.3.1.a | ✅ |
+| 1.3.1.c | Generate a Rollup bundle report with `rollup-plugin-analyzer` and commit it as `docs/bundleReport.html`. | Report exists. | 1.3.1.a | ✅ |
+| 1.3.2.a | Load heavy libraries from a CDN in production; keep local copies in development. | `index.html` switches based on `NODE_ENV`. | 1.3.1.* | ✅ |
 | 1.3.2.b | Add a `vite-preview` script for a lightweight dev server. | `npm run preview` serves the app. | 1.3.1.* | ⬜ |
-| 1.3.3.a | Make separate Rollup configs for dev and prod; turn off source maps in prod. | Two config files documented. | 1.3.1.a | ⬜ |
+| 1.3.3.a | Make separate Rollup configs for dev and prod; turn off source maps in prod. | Two config files documented. | 1.3.1.a | ✅ |
 | 1.3.3.b | Enable Terser minification in prod; make sure it does not break the worker. | Build works; smoke test passes. | 1.3.3.a | ⬜ |
 | 1.3.4.a | Write a release script that bumps the version, builds, and creates a GitHub release with the bundle. | `scripts/release.js` works. | 1.3.3.* | ⬜ |
 
 ---
 
-## Phase 2 — Core Features (Weeks 4-7)
+## Phase 2 — Core Features & Production Readiness (Weeks 4-7) — CRITICAL PRIORITY
 
-### 2.1 Make.com Compatibility (Critical Priority)
+### 2.1 Make.com Schema Validation & Import/Export (Critical Priority) — 40% COMPLETE
 
 | ID | What to do | Output when done | Depends on | Status |
 |----|------------|------------------|------------|---------|
-| 2.1.1.a | Write a full JSON Schema for Make blueprints covering scenarios, modules, connections, routes, variables, and metadata. | `src/schemas/makeBlueprintSchema.js`. | — | ⬜ |
-| 2.1.1.b | Validate three sample blueprints (small, medium, large) with the new schema. Summarize results in `docs/schemaCoverage.md`. | Coverage table created. | 2.1.1.a | ⬜ |
+| 2.1.1.a | **[CRITICAL]** Integrate existing JSON Schema into `blueprintImporter.js` using Ajv validation. | Schema validation actually runs on import. | — | ⚙ |
+| 2.1.1.b | Create sample blueprint files in `samples/` directory (small, medium, large complexity) and validate against schema. | Coverage table created in `docs/schemaCoverage.md`. | 2.1.1.a | ⬜ |
 | 2.1.1.c | Add a CI job `npm run validate:samples` to enforce the schema check. | CI job runs on push. | 2.1.1.b | ⬜ |
-| 2.1.2.a | Write `src/services/blueprintExporter.js` that builds a Make blueprint JSON from our internal data structures. | Exporter returns valid JSON. | 1.2.1.b | ⬜ |
-| 2.1.2.b | Make sure x/y coordinates are preserved; if missing, place modules on a fallback grid. | Imported blueprint keeps its layout. | 2.1.2.a | ⬜ |
-| 2.1.3.a | Write `src/services/blueprintImporter.js` to read a Make JSON file and build our internal tree. | Importer passes unit tests. | 1.1.* | ⬜ |
-| 2.1.3.b | Add an option to remap connection IDs when importing from another account. | Unit tests cover remap. | 2.1.3.a | ⬜ |
-| 2.1.3.c | Write `docs/importer_howto.md` showing CLI and UI examples. | Guide added. | 2.1.3.a | ⬜ |
+| 2.1.2.a | Enhance `src/services/blueprintExporter.js` to preserve module coordinates and handle missing data. | Exporter maintains layout fidelity. | — | ⚙ |
+| 2.1.2.b | Implement coordinate auto-placement: if modules lack x/y coords, place them on a fallback grid. | Missing coords get default positions. | 2.1.2.a | ⬜ |
+| 2.1.3.a | Enhance `src/services/blueprintImporter.js` with comprehensive error handling and validation feedback. | Importer gives detailed error messages. | 2.1.1.a | ⚙ |
+| 2.1.3.b | **[CRITICAL]** Add connection ID remapping option for importing blueprints from different Make.com accounts. | Unit tests cover ID remapping scenarios. | 2.1.3.a | ⬜ |
+| 2.1.3.c | Write `docs/importer_howto.md` with examples of CLI and UI usage, including edge cases. | Usage guide complete. | 2.1.3.b | ⬜ |
 
-### 2.2 Security Basics (Critical Priority)
-
-| ID | What to do | Output when done | Depends on | Status |
-|----|------------|------------------|------------|---------|
-| 2.2.1.a | Add a Content Security Policy tag allowing only self resources and `worker-src blob:`. | DevTools shows no CSP errors. | 1.3.* | ⬜ |
-| 2.2.1.b | Add a random nonce to every inline script on page load. | CSP passes with nonce. | 2.2.1.a | ⬜ |
-| 2.2.2.a | Harden Ajv: limit object depth, error count, and string lengths. | Fuzz tests run clean. | 2.1.1.* | ⬜ |
-| 2.2.2.b | Add an Express rate-limiting middleware for future API routes. | Middleware file created. | — | ⬜ |
-| 2.2.3.a | Use DOMPurify to sanitize all HTML coming from the worker before inserting it. | XSS test passes. | 1.2.2.b | ⬜ |
-| 2.2.3.b | Run `npm audit`, `audit-ci`, and `retire.js`; fix all critical findings. | Security report saved. | 2.2.* | ⬜ |
-
-### 2.3 Logging and Monitoring (High Priority)
+### 2.2 Security Hardening (Critical Priority) — 30% COMPLETE
 
 | ID | What to do | Output when done | Depends on | Status |
 |----|------------|------------------|------------|---------|
-| 2.3.1.a | Set up Sentry using an environment variable for the DSN; upload source maps after each build. | Sentry shows errors with stack traces. | 1.3.4.a | ⬜ |
-| 2.3.1.b | Add breadcrumbs for: blueprint loaded, validation failure, and export click. | Breadcrumbs appear in Sentry. | 2.3.1.a | ⬜ |
-| 2.3.2.a | Create `src/utils/logger.js` that logs in JSON format with levels debug/info/warn/error. | Logger unit-tested. | 1.2.2.b | ⬜ |
-| 2.3.2.b | Replace all direct `console.*` calls with the new logger. | `grep` finds none. | 2.3.2.a | ⬜ |
-| 2.3.3.a | If we wrap the app in Electron or serve via Node, add a `/health` endpoint that returns basic status JSON. | `curl` shows 200 OK. | 2.3.2.a | ⬜ |
-| 2.3.3.b | Implement a heartbeat: the worker posts a message every 5s. Show a green dot when healthy, red when missed. | Heartbeat indicator works. | 1.1.1.c | ⬜ |
+| 2.2.1.a | Add a Content Security Policy tag allowing only self resources and `worker-src blob:`. | DevTools shows no CSP errors. | 1.3.* | ✅ |
+| 2.2.1.b | Add a random nonce to every inline script on page load. | CSP passes with nonce. | 2.2.1.a | ✅ |
+| 2.2.2.a | **[CRITICAL]** Harden Ajv: limit object depth (maxDepth: 10), error count, and string lengths to prevent DoS. | Fuzz tests run clean; no infinite loops. | 2.1.1.* | ⬜ |
+| 2.2.2.b | Add an Express rate-limiting middleware template for future API routes. | Middleware file created. | — | ⬜ |
+| 2.2.3.a | **[CRITICAL]** Replace custom sanitizer with DOMPurify for all HTML from worker before DOM insertion. | XSS test passes; security audit clean. | — | ⬜ |
+| 2.2.3.b | Run `npm audit`, `audit-ci`, and `retire.js`; fix all critical and high severity findings. | Security report shows no critical issues. | 2.2.* | ⬜ |
+
+### 2.3 Logging and Error Tracking (Critical Priority) — 0% COMPLETE
+
+| ID | What to do | Output when done | Depends on | Status |
+|----|------------|------------------|------------|---------|
+| 2.3.1.a | **[CRITICAL]** Set up Sentry using environment variable for DSN; upload source maps after each build. | Sentry dashboard shows errors with stack traces. | 1.3.4.a | ⬜ |
+| 2.3.1.b | Add Sentry breadcrumbs for: blueprint loaded, validation failure, worker error, and export actions. | Breadcrumbs appear in Sentry error reports. | 2.3.1.a | ⬜ |
+| 2.3.2.a | **[CRITICAL]** Create `src/utils/logger.js` with structured JSON logging (debug/info/warn/error levels). | Logger unit-tested and documented. | — | ⬜ |
+| 2.3.2.b | Replace all direct `console.*` calls with structured logger throughout codebase. | `grep -r "console\." src/` returns nothing. | 2.3.2.a | ⬜ |
+| 2.3.3.a | Add a `/health` endpoint template for future server deployment with basic status checks. | Health check template documented. | 2.3.2.a | ⬜ |
+| 2.3.3.b | Implement worker heartbeat: post message every 10s, show status indicator in UI. | Green/red dot shows worker health. | 1.1.1.c | ⬜ |
 
 ---
 
-## Phase 3 — Performance and New Features (Weeks 8-11)
+## Phase 3 — API Integration & Enhanced Features (Weeks 8-11) — PARTIAL PROGRESS
 
-### 3.1 Speed Improvements (High Priority)
+### 3.1 Make.com API Integration (Medium Priority) — 50% COMPLETE
 
-| ID | What to do | Output when done | Depends on | Status |
-|----|------------|------------------|------------|---------|
-| 3.1.1.a | Change the worker to send blueprint data as a Transferable ArrayBuffer. | Parse time drops by ~30%. | 1.1.1.c | ⬜ |
-| 3.1.1.b | Add `workerManager.js` that spins up a pool with one worker per CPU core minus one. | CPU stays ~80% without freezing UI. | 3.1.1.a | ⬜ |
-| 3.1.1.c | Send progress events (start, percentage, done) from the worker; draw a progress bar. | Progress bar matches workload. | 3.1.1.a | ⬜ |
-| 3.1.2.a | Add a service worker to cache core assets so the app works offline. | Lighthouse offline check passes. | 1.3.2.a | ⬜ |
-| 3.1.2.b | Load CodeMirror modes only when the user opens the JSON editor. | Initial network requests ≤ 3. | 1.3.1.b | ⬜ |
-| 3.1.3.a | Watch heap usage after each parse; warn if it exceeds 100 MB. | Warning displayed; memory chart added. | 3.1.* | ⬜ |
-
-### 3.2 Better Blueprint Tools (Medium Priority)
+**Note:** Basic API client already implemented with `fetch` instead of planned `axios` - this is acceptable.
 
 | ID | What to do | Output when done | Depends on | Status |
 |----|------------|------------------|------------|---------|
-| 3.2.1.a | Add `batchProcessor.js` so users can queue several blueprints to process one after another. | CLI demo processes 5 blueprints. | 3.1.1.b | ⬜ |
-| 3.2.1.b | Write unit tests for queue timeouts and cancel actions. | All tests green. | 3.2.1.a | ⬜ |
-| 3.2.2.a | Write a template engine: each template has YAML front-matter plus JSON skeleton with `${var}` placeholders. | Example template renders. | 1.1.1.a | ⬜ |
-| 3.2.2.b | Build a modal that lists templates and lets you search by tag. | Modal opens and filters. | 3.2.2.a | ⬜ |
-| 3.2.2.c | Auto-generate a form for template parameters and inject values into JSON. | Form saves and exports. | 3.2.2.b | ⬜ |
-| 3.2.3.a | Add semantic checks: warn if router depth > 5 or module count > 300. | Warnings appear in output. | 2.1.* | ⬜ |
-| 3.2.3.b | Flag deprecated module types with tooltips. | Tooltip shows on hover. | 3.2.3.a | ⬜ |
+| 3.1.1.a | Enhance existing `makeApiClient.js` with circuit-breaker logic and exponential backoff. | Unit tests show resilience patterns work. | 2.2.2.b | ⚙ |
+| 3.1.1.b | Add comprehensive unit tests for API client retry logic and error scenarios using `nock`. | Test coverage > 90% for API client. | 3.1.1.a | ⬜ |
+| 3.1.2.a | Implement OAuth PKCE flow for Make.com authentication; store tokens securely in memory. | User can authenticate and deploy scenarios. | 3.1.1.a | ⬜ |
+| 3.1.2.b | Add "Deploy to Make" button that sends validated blueprint to Make.com API. | Scenario appears in user's Make account. | 3.1.2.a | ⬜ |
+| 3.1.3.a | Create webhook handler template and dead-letter queue for failed API calls. | Failed deployments are queued for retry. | 3.1.1.a | ⬜ |
 
-### 3.3 API and Deployment (Medium Priority)
+### 3.2 Performance Improvements (Medium Priority)
 
 | ID | What to do | Output when done | Depends on | Status |
 |----|------------|------------------|------------|---------|
-| 3.3.1.a | Create `apiClient.js` using axios with retry and circuit-breaker logic. | Unit tests with nock pass. | 2.2.2.b | ⬜ |
-| 3.3.1.b | Add a unit test that verifies exponential backoff works. | Test passes. | 3.3.1.a | ⬜ |
-| 3.3.2.a | Implement OAuth PKCE flow for Make.com; store the token securely. | User can sign in. | 3.3.1.a | ⬜ |
-| 3.3.2.b | Add a "Deploy Scenario" button that sends the JSON to the Make API. | Scenario appears in Make. | 3.3.2.a | ⬜ |
-| 3.3.3.a | Create an Express webhook handler and dead-letter queue (DLQ) using local-forage. | Failed events queued. | 3.3.1.a | ⬜ |
+| 3.2.1.a | Implement worker progress reporting for large blueprint processing (> 100 modules). | Progress bar shows during long operations. | 1.1.1.c | ⬜ |
+| 3.2.1.b | Add memory usage monitoring; warn if heap exceeds 100MB during processing. | Warning displayed with memory chart. | 3.2.1.a | ⬜ |
+| 3.2.1.c | Implement lazy loading for CodeMirror to reduce initial bundle size. | Initial network requests ≤ 3. | 1.3.1.b | ⬜ |
+| 3.2.2.a | Add service worker for offline functionality and asset caching. | App works fully offline after first load. | 1.3.2.a | ⬜ |
+
+### 3.3 Blueprint Enhancement Tools (Low Priority)
+
+| ID | What to do | Output when done | Depends on | Status |
+|----|------------|------------------|------------|---------|
+| 3.3.1.a | Add batch processing: queue multiple blueprints for sequential processing. | CLI demo processes 5 blueprints. | 2.1.* | ⬜ |
+| 3.3.2.a | Implement blueprint template system with YAML front-matter and variable substitution. | Template engine processes example template. | 2.1.* | ⬜ |
+| 3.3.3.a | Add semantic validation: warn for router depth > 5, module count > 300, deprecated modules. | Warnings appear in spec output. | 2.1.* | ⬜ |
 
 ---
 
-## Phase 4 — Release and QA (Weeks 12-16)
+## Phase 4 — Testing & Deployment (Weeks 12-16)
 
 ### 4.1 Comprehensive Testing (Critical Priority)
 
 | ID | What to do | Output when done | Depends on | Status |
 |----|------------|------------------|------------|---------|
-| 4.1.1.a | Configure Jest with jsdom-worker; reach at least 90% coverage on core code. | Coverage report saved. | 1.2.* | ⬜ |
-| 4.1.1.b | Create snapshot tests for the HTML spec output using pretty-html. | Snapshots pass. | 4.1.1.a | ⬜ |
-| 4.1.2.a | Write integration tests that hit the Make sandbox API (`.env.test` for secrets). | GitHub Actions job passes. | 3.3.* | ⬜ |
-| 4.1.2.b | Full E2E test: import blueprint → generate spec → export → re-import into Make. | Criteria doc shows all ✔. | 2.1., 3.2. | ⬜ |
-| 4.1.3.a | Load-test with Puppeteer: load a 1,000-module blueprint, measure < 8s processing time. | Results in `docs/Perf.md`. | 3.1.* | ⬜ |
+| 4.1.1.a | Expand Jest test coverage to 80%+ on core modules (importer, exporter, worker logic). | Coverage report meets target. | 2.1.* | ⬜ |
+| 4.1.1.b | Add snapshot tests for HTML spec output to catch rendering regressions. | Snapshots prevent UI regressions. | 4.1.1.a | ⬜ |
+| 4.1.1.c | Create integration tests for full import → process → export → re-import cycle. | End-to-end pipeline tested. | 2.1.*, 3.1.* | ⬜ |
+| 4.1.2.a | Performance baseline: measure processing time for 1000-module blueprint (target < 8s). | Benchmark results documented. | 2.1.* | ⬜ |
+| 4.1.2.b | Load testing with Puppeteer: simulate realistic user workflows. | Load test results show acceptable performance. | 4.1.2.a | ⬜ |
 
-### 4.2 User Experience Polish (High Priority)
-
-| ID | What to do | Output when done | Depends on | Status |
-|----|------------|------------------|------------|---------|
-| 4.2.1.a | Add a Web App Manifest and icons; confirm "Add to Home Screen" works in Chrome. | Lighthouse PWA score 100. | 3.1.2.a | ⬜ |
-| 4.2.1.b | Add a light/dark theme toggle and store the choice in localStorage. | Theme persists after refresh. | 1.2.2.b | ⬜ |
-| 4.2.2.a | Run an axe-core audit and fix ARIA labels and colour contrast issues (> 4.5:1). | Axe score 100. | 4.2.1.b | ⬜ |
-| 4.2.3.a | Add swipe gestures (left/right) on mobile to move through history items. | Works in Mobile Safari. | 1.2.2.b | ⬜ |
-
-### 4.3 Deployment and Monitoring (Critical Priority)
+### 4.2 Deployment Automation (High Priority)
 
 | ID | What to do | Output when done | Depends on | Status |
 |----|------------|------------------|------------|---------|
-| 4.3.1.a | Set up GitHub Actions to lint, test, build, and deploy to GitHub Pages. | Pipeline passes on main. | 1.3.4.a | ⬜ |
-| 4.3.2.a | Add Grafana (or another APM) dashboards for performance and error rate. | Dashboard reachable. | 2.3.1.a | ⬜ |
-| 4.3.3.a | Enable basic rate-limiting and add standard security headers in any Node wrapper. | OWASP scan finds no critical issues. | 2.2.2.b | ⬜ |
+| 4.2.1.a | Complete release automation: version bump, build, GitHub release creation. | `npm run release` works end-to-end. | 1.3.4.a | ⬜ |
+| 4.2.1.b | Set up automated deployment to GitHub Pages on main branch push. | Live demo updates automatically. | 4.2.1.a | ⬜ |
+| 4.2.2.a | Create Docker container for server deployment (if API features needed). | Container runs app with health checks. | 3.1.* | ⬜ |
 
 ---
 
-## Quick Wins (≤ 2 days each)
+## Critical Path for Production Readiness
 
-- Remove temp files (1.1.2.a)
-- Shrink bundle by loading vendor scripts from CDN (1.3.2.a)
-- Add Sentry for error tracking (2.3.1.a)
-- Offline support with service worker (3.1.2.a)
+**Priority 1 (Immediate - Week 1-2):**
+1. Complete schema validation integration (2.1.1.a)
+2. Implement DOMPurify sanitization (2.2.3.a)
+3. Create structured logger (2.3.2.a)
 
-## Critical Path
+**Priority 2 (Week 2-3):**
+1. Add connection ID remapping (2.1.3.b)
+2. Set up Sentry error tracking (2.3.1.a)
+3. Harden Ajv validation (2.2.2.a)
 
-1. Schema + importer (Phase 2)
-2. Security baseline (Phase 2.2)
-3. High test coverage (Phase 4.1)
-4. CI/CD pipeline (Phase 4.3)
+**Priority 3 (Week 3-4):**
+1. Enhance import/export robustness (2.1.2.b, 2.1.3.c)
+2. Complete security audit (2.2.3.b)
+3. Replace console calls with logger (2.3.2.b)
+
+## Quick Wins (Can be done anytime)
+
+- Minification in production build (1.3.3.b)
+- Dependency audit and cleanup (1.1.3.c, 2.2.3.b)
+- Worker heartbeat indicator (2.3.3.b)
+- Development server improvements (1.3.2.b)
+
+## Deferred Items (Post-Production)
+
+- Template engine and batch processing (3.3.*)
+- Advanced performance optimizations (3.2.*)
+- Comprehensive E2E testing (4.1.2.*)
+- OAuth PKCE implementation (3.1.2.*)
 
 ---
 
-When this list is complete, Coffee Grinder will support both Make.com blueprint import and export, run fast on large files, work offline, and be safe for public use.
+**Total Estimated Time to Production:** 4-6 weeks focused development
+**Current Completion:** ~60% overall, 40% of critical path items

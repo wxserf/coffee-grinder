@@ -19,6 +19,12 @@ For a quick overview of the folder layout, see [docs/arch.svg](docs/arch.svg).
 - A modern web browser (Chrome, Firefox, Edge, etc.)
 - Optional: Node.js and npm for running local servers and build scripts.
 
+After cloning the repository, install all dependencies:
+```bash
+npm ci
+```
+This installs dev tools such as **Jest** and **ESLint** required for testing and linting.
+
 ### Running Locally
 You can serve the `src` directory using a simple HTTP server or the provided npm script:
 
@@ -50,10 +56,11 @@ Then open your browser at `http://localhost:8080`.
 ### Building for Distribution
 Build artifacts are generated in `dist/`:
 
-1. Bundle scripts with Rollup:
+1. Bundle scripts with Rollup (this command sets `NODE_ENV=production` so CDN scripts load correctly):
    ```bash
    npm run build
    ```
+   The build script sets `NODE_ENV=production` so CDN-hosted libraries load correctly.
 2. Inline assets and create `dist/coffee-grinder.html`:
    ```bash
    node build.js
@@ -64,13 +71,32 @@ Build artifacts are generated in `dist/`:
    ```
 
 ### Running Tests
-Before running tests, install dependencies with:
+Before running tests, ensure dependencies are installed with:
 ```bash
 npm ci
 ```
+This command installs dev packages such as **Jest** and **ESLint**.
 Then execute the unit tests with:
 ```bash
 npm test
+```
+
+## Make.com Integration
+The new `makeApiClient` module offers helper functions to deploy scenarios to the Make API. It relies on the global `fetch` API available in **Node.js 18 or newer**.
+
+Before running the tests for this module, make sure to install dependencies with:
+```bash
+npm install
+```
+
+Example usage:
+```javascript
+const { deployScenario } = require('./src/services/makeApiClient');
+
+const blueprint = { name: 'My Flow', flow: [] };
+
+deployScenario(process.env.MAKE_TOKEN, blueprint)
+  .then(res => console.log('Scenario deployed:', res.id));
 ```
 
 ## Contributing

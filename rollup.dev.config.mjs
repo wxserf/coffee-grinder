@@ -1,11 +1,10 @@
 /**
- * Simple Rollup config for bundling main.js and worker.js with dependencies for browser usage.
  */
-
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import alias from '@rollup/plugin-alias';
 import analyze from 'rollup-plugin-analyzer';
+import replace from '@rollup/plugin-replace';
 
 const pathAliases = alias({
   entries: [
@@ -26,7 +25,6 @@ export default [
       format: 'iife',
       name: 'VendorLibs'
     },
-    plugins: [resolve(), commonjs()],
     treeshake: { moduleSideEffects: false }
   },
   {
@@ -35,9 +33,6 @@ export default [
       file: 'dist/bundle.js',
       format: 'iife',
       name: 'CoffeeGrinderApp',
-      sourcemap: true,
-    },
-    plugins: [pathAliases, resolve(), commonjs(), analyze({ summaryOnly: true, html: 'docs/bundleReport.html' })],
     treeshake: { moduleSideEffects: false }
   },
   {
@@ -46,9 +41,7 @@ export default [
       file: 'dist/worker.bundle.js',
       format: 'iife',
       name: 'CoffeeGrinderWorker',
-      sourcemap: true,
-    },
-    plugins: [pathAliases, resolve(), commonjs()],
+
     treeshake: { moduleSideEffects: false }
   }
 ];
