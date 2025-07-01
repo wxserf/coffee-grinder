@@ -54,6 +54,7 @@ Build artifacts are generated in `dist/`:
    ```bash
    npm run build
    ```
+   The build script sets `NODE_ENV=production` so CDN-hosted libraries load correctly.
 2. Inline assets and create `dist/coffee-grinder.html`:
    ```bash
    node build.js
