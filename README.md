@@ -19,6 +19,12 @@ For a quick overview of the folder layout, see [docs/arch.svg](docs/arch.svg).
 - A modern web browser (Chrome, Firefox, Edge, etc.)
 - Optional: Node.js and npm for running local servers and build scripts.
 
+After cloning the repository, install all dependencies:
+```bash
+npm ci
+```
+This installs dev tools such as **Jest** and **ESLint** required for testing and linting.
+
 ### Running Locally
 You can serve the `src` directory using a simple HTTP server or the provided npm script:
 
@@ -64,10 +70,11 @@ Build artifacts are generated in `dist/`:
    ```
 
 ### Running Tests
-Before running tests, install dependencies with:
+Before running tests, ensure dependencies are installed with:
 ```bash
 npm ci
 ```
+This command installs dev packages such as **Jest** and **ESLint**.
 Then execute the unit tests with:
 ```bash
 npm test
