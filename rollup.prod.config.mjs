@@ -16,30 +16,23 @@ const pathAliases = alias({
     { find: '@templates', replacement: 'src/templates' }
   ]
 });
-export default [
-  {
-    input: 'src/scripts/vendor.js',
-    output: {
-      file: 'dist/vendor.js',
-      format: 'iife',
-      name: 'VendorLibs'
-    },
-    treeshake: { moduleSideEffects: false }
+
+export default {
+  input: 'src/scripts/main.js',
+  output: {
+    file: 'dist/bundle.js',
+    format: 'iife',
+    name: 'CoffeeGrinderApp',
   },
-  {
-    input: 'src/scripts/main.js',
-    output: {
-      file: 'dist/bundle.js',
-      format: 'iife',
-      name: 'CoffeeGrinderApp',
-    treeshake: { moduleSideEffects: false }
-  },
-  {
-    input: 'src/workers/specWorker.js',
-    output: {
-      file: 'dist/worker.bundle.js',
-      format: 'iife',
-      name: 'CoffeeGrinderWorker',
-    treeshake: { moduleSideEffects: false }
-  }
-];
+  plugins: [
+    pathAliases,
+    resolve(),
+    commonjs(),
+    replace({
+      preventAssignment: true,
+      'process.env.NODE_ENV': JSON.stringify('production')
+    }),
+    analyze()
+  ],
+  treeshake: { moduleSideEffects: false }
+};
