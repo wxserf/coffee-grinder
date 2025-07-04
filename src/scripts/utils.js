@@ -1,5 +1,16 @@
+let DOMPurify = null;
+if (typeof window !== 'undefined' && window.DOMPurify) {
+  DOMPurify = window.DOMPurify;
+}
+
 function sanitizeForHTML(str) {
   if (!str) return '';
+  if (DOMPurify) {
+    return DOMPurify.sanitize(String(str), {
+      ALLOWED_TAGS: [],
+      ALLOWED_ATTR: []
+    });
+  }
   return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')

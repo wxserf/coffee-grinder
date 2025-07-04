@@ -4,15 +4,20 @@ let sanitizeForHTML, formatJson;
 if (typeof module !== 'undefined' && module.exports) {
   ({ sanitizeForHTML, formatJson } = require('../scripts/utils'));
 } else {
-  sanitizeForHTML = str => {
-    if (!str) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  };
+  if (self.DOMPurify) {
+    sanitizeForHTML = str =>
+      self.DOMPurify.sanitize(String(str || ''), { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+  } else {
+    sanitizeForHTML = str => {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    };
+  }
 
   formatJson = data => {
     try {
