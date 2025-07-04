@@ -11,7 +11,8 @@
     "lint": "eslint src/ tests/",
     "lint:fix": "eslint src/ tests/ --fix",
     "format": "prettier --write src/ tests/",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "release": "node scripts/release.js"
   },
   "keywords": [
     "automation",
