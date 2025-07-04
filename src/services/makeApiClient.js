@@ -4,6 +4,7 @@
 
 const DEFAULT_RETRIES = 3;
 const BASE_URL = 'https://api.make.com/v2';
+const { stringify } = require('../utils/jsonProcessor');
 
 async function request(path, options = {}, retries = DEFAULT_RETRIES) {
   const url = `${BASE_URL}${path}`;
@@ -36,7 +37,7 @@ async function deployScenario(token, blueprint) {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(blueprint)
+    body: stringify(blueprint)
   };
   return request('/scenarios', options);
 }
