@@ -1,3 +1,4 @@
+const { stringify } = require('../utils/jsonProcessor');
 let sanitizeForHTML, formatJson;
 
 if (typeof module !== 'undefined' && module.exports) {
@@ -15,7 +16,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
   formatJson = data => {
     try {
-      return JSON.stringify(data, null, 2);
+      return stringify(data, 2);
     } catch (_) {
       return '[Could not format JSON]';
     }

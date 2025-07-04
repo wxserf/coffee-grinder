@@ -70,7 +70,7 @@ The checklist is grouped by project phase so you can work from the ground up: co
 | 1.3.2.a | Load heavy libraries from a CDN in production; keep local copies in development. | `index.html` switches based on `NODE_ENV`. | 1.3.1.* | ✅ |
 | 1.3.2.b | Add a `vite-preview` script for a lightweight dev server. | `npm run preview` serves the app. | 1.3.1.* | ⬜ |
 | 1.3.3.a | Make separate Rollup configs for dev and prod; turn off source maps in prod. | Two config files documented. | 1.3.1.a | ✅ |
-| 1.3.3.b | Enable Terser minification in prod; make sure it does not break the worker. | Build works; smoke test passes. | 1.3.3.a | ⬜ |
+| 1.3.3.b | Enable Terser minification in prod; make sure it does not break the worker. | Build works; smoke test passes. | 1.3.3.a | ✅ |
 | 1.3.4.a | Write a release script that bumps the version, builds, and creates a GitHub release with the bundle. | `scripts/release.js` works. | 1.3.3.* | ⬜ |
 
 ---
@@ -188,7 +188,7 @@ The checklist is grouped by project phase so you can work from the ground up: co
 
 ## Quick Wins (Can be done anytime)
 
-- Minification in production build (1.3.3.b)
+- ~~Minification in production build (1.3.3.b)~~
 - Dependency audit and cleanup (1.1.3.c, 2.2.3.b)
 - ~~Worker heartbeat indicator (2.3.3.b)~~
 - Development server improvements (1.3.2.b)
