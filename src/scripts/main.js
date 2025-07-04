@@ -222,7 +222,8 @@ function handleWorkerMessage(e) {
     const { html, warnings, processedModules: pm } = e.data;
     processedModules = pm; // Store processed data for export
 
-    outArea.innerHTML = html;
+    const safeHtml = window.DOMPurify ? window.DOMPurify.sanitize(html) : html;
+    outArea.innerHTML = safeHtml;
     if (warnings && warnings.length > 0) {
         showWarning(parseWarn, 'Processing Warnings:\n- ' + warnings.join('\n- '));
     } else {
