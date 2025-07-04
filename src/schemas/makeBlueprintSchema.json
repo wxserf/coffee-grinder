@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Make.com Blueprint",
+  "type": "object",
+  "required": ["name", "flow"],
+  "properties": {
+    "name": { "type": "string" },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "instant": { "type": "boolean" },
+        "scenario": {
+          "type": "object",
+          "properties": {
+            "sequential": { "type": "boolean" }
+          },
+          "required": ["sequential"],
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "connections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type"],
+        "properties": {
+          "id": { "anyOf": [{ "type": "integer" }, { "type": "string" }] },
+          "name": { "type": "string" },
+          "module": { "type": "string" },
+          "type": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "variables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type"],
+        "properties": {
+          "name": { "type": "string" },
+          "type": { "type": "string" },
+          "value": {}
+        },
+        "additionalProperties": true
+      }
+    },
+    "flow": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/module" }
+    }
+  },
+  "definitions": {
+    "module": {
+      "type": "object",
+      "required": ["id", "module"],
+      "properties": {
+        "id": { "anyOf": [{ "type": "integer" }, { "type": "string" }] },
+        "module": { "type": "string" },
+        "app": { "type": "string" },
+        "version": { "type": "integer" },
+        "label": { "type": "string" },
+        "parameters": { "type": "object" },
+        "mapper": { "type": "object" },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "x": { "type": "integer" },
+            "y": { "type": "integer" }
+          },
+          "additionalProperties": true
+        },
+        "filter": { "type": ["object", "null"] },
+        "routes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["flow"],
+            "properties": {
+              "filter": { "type": ["object", "null"] },
+              "flow": { "type": "array", "items": { "$ref": "#/definitions/module" } }
+            },
+            "additionalProperties": true
+          }
+        },
+        "onerror": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/module" }
+        },
+        "disabled": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

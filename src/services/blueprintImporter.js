@@ -5,12 +5,20 @@ const ajv = createValidator();
 const validate = ajv.compile(schema);
 const { parse } = require('../utils/jsonProcessor');
 
+function formatAjvErrors(errors = []) {
+  return errors
+    .map(err => {
+      const path = err.instancePath || err.dataPath || '';
+      return `${path ? path + ' ' : ''}${err.message}`;
+    })
+    .join('; ');
+}
+
 function importBlueprint(jsonStr, options = {}) {
   const data = parse(jsonStr);
   if (!validate(data)) {
-    const err = new Error(
-      'Data does not match schema: ' + ajv.errorsText(validate.errors)
-    );
+    const message = formatAjvErrors(validate.errors);
+    const err = new Error('Data does not match schema: ' + message);
     err.validationErrors = validate.errors;
     throw err;
   }
