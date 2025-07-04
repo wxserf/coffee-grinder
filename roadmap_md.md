@@ -23,7 +23,7 @@ The checklist is grouped by project phase so you can work from the ground up: co
 ## Current Status Summary
 
 **✅ Phase 1 Foundation:** 90% complete - excellent modular architecture, build system, and tooling
-**⚙ Phase 2 Core Features:** 40% complete - basic import/export exists but needs schema validation and enhanced features  
+**⚙ Phase 2 Core Features:** 50% complete - schema validation integrated; enhanced features still pending
 **⚙ Phase 2 Security:** 30% complete - CSP implemented, but missing sanitization and hardening
 **⚙ Phase 2 Logging:** 0% complete - critical gap for production readiness
 **⚙ Phase 3 API (ahead of schedule):** 50% complete - basic API client implemented with fetch
@@ -77,11 +77,11 @@ The checklist is grouped by project phase so you can work from the ground up: co
 
 ## Phase 2 — Core Features & Production Readiness (Weeks 4-7) — CRITICAL PRIORITY
 
-### 2.1 Make.com Schema Validation & Import/Export (Critical Priority) — 40% COMPLETE
+### 2.1 Make.com Schema Validation & Import/Export (Critical Priority) — 50% COMPLETE
 
 | ID | What to do | Output when done | Depends on | Status |
 |----|------------|------------------|------------|---------|
-| 2.1.1.a | **[CRITICAL]** Integrate existing JSON Schema into `blueprintImporter.js` using Ajv validation. | Schema validation actually runs on import. | — | ⚙ |
+| 2.1.1.a | **[CRITICAL]** Integrate existing JSON Schema into `blueprintImporter.js` using Ajv validation. | Schema validation actually runs on import. | — | ✅ |
 | 2.1.1.b | Create sample blueprint files in `samples/` directory (small, medium, large complexity) and validate against schema. | Coverage table created in `docs/schemaCoverage.md`. | 2.1.1.a | ⬜ |
 | 2.1.1.c | Add a CI job `npm run validate:samples` to enforce the schema check. | CI job runs on push. | 2.1.1.b | ⬜ |
 | 2.1.2.a | Enhance `src/services/blueprintExporter.js` to preserve module coordinates and handle missing data. | Exporter maintains layout fidelity. | — | ⚙ |
@@ -172,7 +172,7 @@ The checklist is grouped by project phase so you can work from the ground up: co
 ## Critical Path for Production Readiness
 
 **Priority 1 (Immediate - Week 1-2):**
-1. Complete schema validation integration (2.1.1.a)
+1. ~~Complete schema validation integration (2.1.1.a)~~
 2. Implement DOMPurify sanitization (2.2.3.a)
 3. Create structured logger (2.3.2.a)
 
