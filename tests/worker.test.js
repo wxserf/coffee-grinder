@@ -19,7 +19,7 @@ describe('formatJson (worker)', () => {
   test('handles circular structures gracefully', () => {
     const a = {};
     a.self = a;
-    expect(formatJson(a)).toBe('[Could not format JSON]');
+    expect(formatJson(a)).toBe('{\n  "self": "[Circular]"\n}');
   });
 });
 

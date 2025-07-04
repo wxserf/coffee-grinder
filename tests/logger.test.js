@@ -1,4 +1,5 @@
 const logger = require('../src/utils/logger');
+const { parse } = require('../src/utils/jsonProcessor');
 
 describe('logger', () => {
   let spy;
@@ -20,7 +21,7 @@ describe('logger', () => {
   ['debug', 'info', 'warn', 'error'].forEach(level => {
     test(`${level} outputs JSON line`, () => {
       logger[level]('message', { extra: 1 });
-      const obj = JSON.parse(output);
+      const obj = parse(output);
       expect(obj.level).toBe(level);
       expect(obj.message).toBe('message');
       expect(obj.extra).toBe(1);

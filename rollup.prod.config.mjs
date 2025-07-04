@@ -5,7 +5,6 @@ import commonjs from '@rollup/plugin-commonjs';
 import alias from '@rollup/plugin-alias';
 import analyze from 'rollup-plugin-analyzer';
 import replace from '@rollup/plugin-replace';
-import { terser } from '@rollup/plugin-terser';
 
 const pathAliases = alias({
   entries: [
@@ -31,7 +30,7 @@ export default {
     commonjs(),
     replace({
       preventAssignment: true,
-      'process.env.NODE_ENV': JSON.stringify('production')
+      'process.env.NODE_ENV': stringify('production')
     }),
     terser(),
     analyze()

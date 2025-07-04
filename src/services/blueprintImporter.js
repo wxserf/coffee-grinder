@@ -3,14 +3,10 @@ const createValidator = require('../validators/baseValidator');
 
 const ajv = createValidator();
 const validate = ajv.compile(schema);
+const { parse } = require('../utils/jsonProcessor');
 
 function importBlueprint(jsonStr, options = {}) {
-  let data;
-  try {
-    data = JSON.parse(jsonStr);
-  } catch (e) {
-    throw new Error('Invalid JSON');
-  }
+  const data = parse(jsonStr);
   if (!validate(data)) {
     const err = new Error(
       'Data does not match schema: ' + ajv.errorsText(validate.errors)

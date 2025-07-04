@@ -1,6 +1,7 @@
 import { showError, showWarning, clearError, clearAllErrors } from '@components/ui/modals.js';
 import { activateExportButtons, generatePdf, download } from '@components/ui/buttons.js';
 import { setupTableFilter, makeSortable } from '@components/ui/tables.js';
+import { parse, stringify } from '@utils/jsonProcessor.js';
 // --- Config & Initialization ---
 const META_FIELDS = ['preparedBy', 'recipient', 'version', 'objective'];
 const TOGGLE_FIELDS = ['showScenario', 'showConnections', 'showVars', 'showFilters', 'showModuleDetails'];
@@ -96,7 +97,7 @@ function tryValidate() {
   blueprint = null; // Reset
   processedModules = []; // Reset
   try {
-    data = JSON.parse(editor.getValue());
+    data = parse(editor.getValue());
   } catch (e) {
     showError(valErr, 'Invalid JSON: ' + e.message);
     genBtn.disabled = true;
@@ -162,7 +163,7 @@ sampleBtn.addEventListener('click', () => {
         ]}
     ]
    };
-   editor.setValue(JSON.stringify(sample, null, 2));
+   editor.setValue(stringify(sample, 2));
    tryValidate();
 });
 
