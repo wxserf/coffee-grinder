@@ -86,6 +86,8 @@ npm test
 ## Make.com Integration
 The new `makeApiClient` module offers helper functions to deploy scenarios to the Make API. It relies on the global `fetch` API available in **Node.js 18 or newer**.
 
+The `blueprintImporter` also integrates **Ajv** to validate blueprints against `makeBlueprintSchema`. When a file fails validation, the importer throws an error containing detailed messages from Ajv so you can quickly identify issues.
+
 Before running the tests for this module, make sure to install dependencies with:
 ```bash
 npm install
