@@ -1,8 +1,10 @@
+const { stringify } = require('../utils/jsonProcessor');
+
 function exportBlueprint(blueprint) {
   if (!blueprint || typeof blueprint !== 'object') {
     throw new Error('Invalid blueprint object');
   }
-  return JSON.stringify(blueprint, null, 2);
+  return stringify(blueprint, 2);
 }
 
 module.exports = { exportBlueprint };

@@ -1,6 +1,8 @@
+const { stringify } = require('./jsonProcessor');
+
 function emit(level, message, meta = {}) {
   const entry = { timestamp: new Date().toISOString(), level, message, ...meta };
-  process.stdout.write(JSON.stringify(entry) + '\n');
+  process.stdout.write(stringify(entry) + '\n');
 }
 
 module.exports = {

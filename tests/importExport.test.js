@@ -1,5 +1,6 @@
 const { importBlueprint } = require('../src/services/blueprintImporter');
 const { exportBlueprint } = require('../src/services/blueprintExporter');
+const { parse, stringify } = require('../src/utils/jsonProcessor');
 
 describe('blueprintImporter', () => {
   test('parses valid blueprint JSON', () => {
@@ -40,7 +41,7 @@ describe('blueprintImporter', () => {
         }
       ]
     };
-    const json = JSON.stringify(bp);
+    const json = stringify(bp);
     const obj = importBlueprint(json, { remapConnections: { 1: 99 } });
     expect(obj.connections[0].id).toBe(99);
     expect(obj.flow[0].parameters.__IMTCONN__).toBe(99);
@@ -52,7 +53,7 @@ describe('blueprintExporter', () => {
   test('serializes blueprint object', () => {
     const obj = { name: 'BP', flow: [] };
     const json = exportBlueprint(obj);
-    expect(JSON.parse(json)).toEqual(obj);
+    expect(parse(json)).toEqual(obj);
     expect(json).toContain('\n');
   });
 });

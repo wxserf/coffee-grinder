@@ -8,9 +8,11 @@ function sanitizeForHTML(str) {
     .replace(/'/g, '&#039;');
 }
 
+const { stringify } = require('./jsonProcessor');
+
 function formatJson(data) {
   try {
-    return JSON.stringify(data, null, 2);
+    return stringify(data, 2);
   } catch (e) {
     return '[Could not format JSON]';
   }
