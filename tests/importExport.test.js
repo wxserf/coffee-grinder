@@ -22,6 +22,8 @@ describe('blueprintImporter', () => {
       importBlueprint('{"name":123,"flow":{}}');
     } catch (err) {
       expect(err.message).toMatch(/Data does not match schema/);
+      expect(err.message).toMatch('name');
+      expect(err.message).toMatch('flow');
       expect(Array.isArray(err.validationErrors)).toBe(true);
     }
   });
